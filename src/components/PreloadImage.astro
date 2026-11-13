@@ -1,0 +1,21 @@
+---
+// Preload da imagem do LCP no <head>: a imagem chega junto com o CSS e pinta no primeiro quadro, antes dos scripts
+// de animação. Uso na página: <PreloadImage slot="head" src={foto} widths={[...]} sizes="..." />.
+// widths, sizes, quality e format precisam ser os mesmos do <Photo>/<Image> da página, para o navegador baixar
+// exatamente o mesmo arquivo (o build confere: a URL do preload tem de existir no srcset da página).
+import { getImage } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  src: ImageMetadata;
+  widths: number[];
+  sizes: string;
+  quality?: number;
+  format?: 'avif' | 'webp';
+}
+
+const { src, widths, sizes, quality, format = 'avif' } = Astro.props;
+const img = await getImage({ src, widths: widths.filter((w) => w <= src.width), sizes, quality, format });
+---
+
+<link rel="preload" as="image" type={`image/${format}`} imagesrcset={img.srcSet.attribute} imagesizes={sizes} fetchpriority="high" />

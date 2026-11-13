@@ -1,0 +1,17 @@
+---
+// Desenhos de marca em linha fina (src/assets/sketches, gerados por scripts/make-sketches.mjs).
+// Embutidos no HTML em tempo de build: nenhuma requisição extra. São decoração: o texto ao lado já informa.
+interface Props {
+  name: string;
+  class?: string;
+}
+
+const files = import.meta.glob<string>('../assets/sketches/*.svg', { query: '?raw', import: 'default', eager: true });
+const { name, class: className } = Astro.props;
+const raw = files[`../assets/sketches/${name}.svg`];
+if (!raw) throw new Error(`Desenho não encontrado: ${name}`);
+const cls = ['sketch', `sketch-${name}`, className].filter(Boolean).join(' ');
+const svg = raw.replace(/ xmlns="[^"]*"/, '').replace('<svg', `<svg class="${cls}" aria-hidden="true" focusable="false" data-draw`);
+---
+
+<Fragment set:html={svg} />

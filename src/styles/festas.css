@@ -1,0 +1,312 @@
+/* ============ Natal e Réveillon ============
+   Papel do cardápio impresso com a guirlanda de alecrim, as datas penduradas no barbante, a ceia no verde liso
+   da marca, a encomenda em abas e o fechamento no verde da noite. Vermelho só como terracota. */
+:root {
+  --ceia: #0b3d12;
+  --noite: #10301a;
+  --terracota: #a2452c;
+  --aba-inativa: #5a4e40;
+}
+
+.fx-sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+.fx-mark { display: inline-block; flex: none; }
+.fx-mark-roma { color: var(--terracota); }
+
+/* Ramos 1 a 3: só três cantos na página, nunca sobre texto. No celular saem. */
+.fx-corner { position: absolute; z-index: -1; height: auto; opacity: 0.9; pointer-events: none; user-select: none; }
+@media (max-width: 63.99rem) { .fx-corner { display: none; } }
+
+/* ---------- 1. Convite ---------- */
+.fx-hero { position: relative; isolation: isolate; overflow: hidden; padding: 6.75rem var(--gutter) 2.75rem; }
+.fx-corner-hero { left: -3.5rem; bottom: -4.5rem; width: clamp(11rem, 15vw, 15rem); rotate: 8deg; }
+
+.fx-hero-in {
+  display: grid; grid-template-areas: 'crumbs' 'intro' 'wreath' 'tags' 'rules'; row-gap: 1.75rem;
+  width: 100%; max-width: 88rem; margin-inline: auto;
+}
+.fx-crumbs { grid-area: crumbs; font-size: 0.8125rem; color: var(--marrom); }
+.fx-crumbs ol { display: flex; gap: 0.5em; }
+.fx-crumbs li + li::before { content: '/'; margin-right: 0.5em; }
+.fx-crumbs a { text-decoration: none; }
+.fx-crumbs a:hover { color: var(--selo); }
+
+.fx-intro { grid-area: intro; display: grid; justify-items: start; gap: 1.25rem; }
+.fx-title { display: grid; justify-items: start; font-weight: 400; color: var(--verde); }
+.fx-kicker { font-size: clamp(0.8125rem, 1.1vw, 1rem); letter-spacing: 0.42em; color: var(--selo); }
+.fx-natal { margin: 0.2em 0 0 -0.08em; padding: 0.12em 0.3em 0 0; font-size: clamp(5.5rem, 26vw, 9rem); line-height: 0.8; }
+.fx-rev { margin-top: -0.1em; font-size: clamp(2.5rem, 11vw, 4.25rem); line-height: 1; letter-spacing: -0.015em; }
+.fx-lead { max-width: 24rem; font-size: clamp(1.0625rem, 1.25vw, 1.1875rem); line-height: 1.55; text-wrap: pretty; }
+.fx-cta { border-radius: var(--r-sm); }
+
+/* Guirlanda: a foto ocupa 58% do diâmetro, no vazio central medido na arte (centro 49,42% x 49,56%). */
+.fx-wreath { grid-area: wreath; position: relative; justify-self: center; width: min(78vw, 30rem); aspect-ratio: 900 / 907; }
+.fx-wreath-photo {
+  position: absolute; left: 20.42%; top: 20.78%; width: 58%; aspect-ratio: 1;
+  overflow: hidden; border-radius: 50%; background: var(--crosta);
+}
+.fx-wreath-photo picture, .fx-wreath-photo img { display: block; width: 100%; height: 100%; }
+.fx-wreath-photo img { object-fit: cover; object-position: 42% 66%; scale: 1.45; transform-origin: 42% 66%; }
+.fx-wreath-art { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+/* Etiquetas: a arte é o fundo; o texto fica no HTML, no retângulo e na inclinação de cada etiqueta
+   (medidos por scripts/make-natal-assets.mjs). As medidas de fonte seguem a largura da arte (cqw). */
+.fx-tags-wrap {
+  grid-area: tags; position: relative; container-type: inline-size;
+  width: 116vw; margin-inline: calc(50% - 58vw); aspect-ratio: 1200 / 830;
+}
+.fx-tags-art { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.fx-tags { position: absolute; inset: 0; }
+.fx-tag-li {
+  position: absolute; left: calc(var(--cx) - var(--w) / 2); top: calc(var(--cy) - var(--h) / 2); width: var(--w); height: var(--h);
+  rotate: var(--rot);
+}
+.fx-tag {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;
+  padding: 25% 7% 7%; text-align: center; text-decoration: none; color: var(--marrom); border-radius: var(--r-sm);
+}
+.fx-tag:focus-visible { outline-offset: -0.25rem; }
+.fx-tag-head { display: flex; align-items: center; justify-content: center; gap: 0.2em; max-width: 100%; }
+.fx-tag-name { font-size: max(1.375rem, 5.4cqw); line-height: 1; color: var(--verde); }
+.fx-tag-head .fx-mark { height: 0.8em; width: auto; font-size: max(1.375rem, 5.4cqw); }
+.fx-tag-k { margin-top: 0.4em; font-size: max(0.5625rem, 1.85cqw); letter-spacing: 0.14em; white-space: nowrap; }
+.fx-tag-day { font: 400 max(1.75rem, 7.2cqw)/1 var(--display); font-variant-numeric: lining-nums; color: var(--verde); }
+.fx-tag-week { font-size: max(0.75rem, 2.35cqw); }
+.fx-tag-ret {
+  margin-top: 0.55em; padding-top: 0.5em; border-top: 1px dotted rgb(77 32 19 / 0.45);
+  font-size: max(0.6875rem, 2.2cqw); line-height: 1.3; font-weight: 600;
+}
+.fx-tag-left, .fx-closed { margin-top: 0.35em; font-size: max(0.625rem, 1.75cqw); letter-spacing: 0.14em; color: var(--terracota); }
+.is-closed .fx-tag-day { text-decoration: line-through; text-decoration-thickness: 1px; }
+.is-closed .fx-tag { opacity: 0.6; }
+
+.fx-rules { grid-area: rules; display: grid; gap: 0.6rem; padding-top: 1.25rem; border-top: 1px solid rgb(48 27 22 / 0.14); font-size: 0.9375rem; }
+.fx-rules li { display: flex; align-items: center; gap: 0.6em; }
+.fx-rules .icon { flex: none; width: 1.15em; height: 1.15em; color: var(--selo); }
+
+@media (min-width: 64rem) {
+  .fx-hero { display: flex; align-items: center; min-height: var(--screen); padding-top: 6.5rem; padding-bottom: 3.5rem; }
+  .fx-hero-in {
+    grid-template-columns: minmax(0, 0.9fr) min(28rem, 54svh) minmax(0, 1.3fr);
+    grid-template-areas: 'crumbs crumbs crumbs' 'intro wreath tags' 'rules rules rules';
+    column-gap: clamp(1.5rem, 3vw, 3rem); row-gap: 1.75rem; align-items: center;
+  }
+  .fx-wreath { width: 100%; }
+  .fx-natal { font-size: clamp(6rem, 8vw, 9rem); }
+  .fx-rev { font-size: clamp(2.75rem, 3.7vw, 4rem); }
+  /* A arte das etiquetas avança até a borda: o barbante sai pela lateral da página. */
+  .fx-tags-wrap { width: calc(100% + var(--gutter)); margin: 0 calc(-1 * var(--gutter)) 0 0; }
+  .fx-rules { display: flex; justify-content: center; gap: 0.5rem clamp(1.5rem, 3vw, 3rem); }
+  .fx-rules li + li::before { content: ''; width: 4px; height: 4px; margin-right: clamp(0.75rem, 1.5vw, 1.5rem); border-radius: 50%; background: var(--dourado); }
+}
+
+/* Laço entre o convite e a ceia: em cima da emenda, sem ocupar altura. */
+.fx-laco { position: relative; z-index: 2; display: flex; justify-content: center; align-items: flex-start; height: 0; pointer-events: none; }
+.fx-laco img { width: min(520px, 88vw); height: auto; translate: 0 -50%; }
+
+/* ---------- 2. A ceia ---------- */
+.fx-ceia { position: relative; isolation: isolate; overflow: hidden; padding: clamp(4rem, 8vw, 5.5rem) var(--gutter) clamp(3rem, 6vw, 4.5rem); background: var(--ceia); color: var(--papel); }
+
+/* Grão de papel e vinheta nos verdes lisos (ceia e fechamento). Ruído em SVG inline, sem arquivo e sem animação.
+   O ruído sai em cinza opaco e com contraste esticado: o fractalNoise cru fica em torno do cinza médio e some no overlay. */
+/* O ruído (--grao) é token do global.css, usado também na vitrine de Natal da home. */
+.fx-ceia::before, .fx-fim::before {
+  content: ''; position: absolute; inset: 0; z-index: -3; pointer-events: none;
+  background: var(--grao) 0 0 / 200px 200px; mix-blend-mode: overlay; opacity: 0.1;
+}
+.fx-ceia::after, .fx-fim::after {
+  content: ''; position: absolute; inset: 0; z-index: -2; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 50%, transparent 55%, rgb(0 0 0 / 0.08) 100%);
+}
+.fx-corner-ceia { right: -2.5rem; top: 1.25rem; width: clamp(12rem, 17vw, 17rem); rotate: 180deg; scale: 1 -1; }
+.fx-ceia-grid { display: grid; gap: 2.5rem; }
+.fx-ceia-fig { --side: clamp(5.5rem, 26vw, 9rem); position: relative; margin: 0; }
+.fx-ceia-photo { overflow: hidden; border-radius: var(--r-md); background: var(--crosta); }
+.fx-ceia-photo picture, .fx-ceia-photo img { display: block; width: 100%; }
+.fx-ceia-photo img { aspect-ratio: 4 / 3; object-fit: cover; object-position: 55% 62%; }
+/* Os acompanhamentos sobem metade sobre a base da foto, como pratos em volta da travessa. */
+.fx-sides { position: relative; display: flex; justify-content: center; gap: clamp(0.75rem, 3vw, 2.25rem); margin-top: calc(var(--side) * -0.5); }
+.fx-side { display: grid; justify-items: center; gap: 0.6rem; width: var(--side); text-align: center; }
+.fx-side-rim {
+  display: block; width: 100%; aspect-ratio: 1; overflow: hidden; border-radius: 50%; background: var(--crosta);
+  box-shadow: 0 0 0 5px var(--ceia), 0 0 0 6px rgb(205 176 71 / 0.55);
+}
+.fx-side-rim picture, .fx-side-rim img { display: block; width: 100%; height: 100%; }
+.fx-side-rim img { object-fit: cover; }
+.fx-side-cap { display: grid; font-size: 0.75rem; line-height: 1.2; }
+.fx-side-cap .price { font-size: 1.25rem; color: var(--farofa); }
+.fx-side-cap .caps { letter-spacing: 0.14em; }
+
+/* Comanda: papel do bloco de pedidos, com a borda de baixo picotada. */
+.fx-comanda {
+  --pico: 9px;
+  align-self: center; padding: clamp(1.75rem, 3vw, 2.5rem) clamp(1.5rem, 3vw, 2.5rem) calc(clamp(1.75rem, 3vw, 2.5rem) + var(--pico));
+  border-radius: var(--r-md) var(--r-md) 0 0; background: var(--papel-fundo); color: var(--crosta);
+  -webkit-mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / calc(2 * var(--pico)) 100%;
+  mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / calc(2 * var(--pico)) 100%;
+}
+.fx-comanda-k { font-size: 0.8125rem; letter-spacing: 0.24em; color: var(--selo); }
+.fx-comanda-t { margin: 0.5rem 0 0.9rem; font-size: clamp(2.25rem, 3.6vw, 3.25rem); color: var(--verde); }
+.fx-comanda-desc { padding-bottom: 1.25rem; border-bottom: 1px dotted rgb(48 27 22 / 0.35); font-size: 1.0625rem; line-height: 1.55; text-wrap: pretty; }
+.fx-rice { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin: 1.25rem 0 0; padding: 0; border: 0; }
+.fx-rice[hidden] { display: none; }
+.fx-rice legend { float: left; margin-right: 0.75rem; padding: 0; font-size: 0.8125rem; letter-spacing: 0.2em; }
+.fx-rice label { position: relative; cursor: pointer; }
+.fx-rice input { position: absolute; opacity: 0; }
+.fx-rice span {
+  display: block; min-height: 2.75rem; padding: 0.7rem 1.1rem; border-radius: var(--r-sm); box-shadow: inset 0 0 0 1px rgb(7 55 1 / 0.35);
+  font-weight: 600; font-size: 0.9375rem; line-height: 1.4; transition: background-color 0.2s ease, color 0.2s ease;
+}
+.fx-rice input:checked + span { background: var(--verde); color: var(--papel); box-shadow: none; }
+.fx-rice input:focus-visible + span { outline: 3px solid var(--toalha); outline-offset: 2px; }
+.fx-comanda-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem 1.5rem; margin-top: 1.5rem; }
+.fx-comanda-price strong { font: 400 clamp(3rem, 5vw, 4.25rem)/1 var(--display); color: var(--verde); }
+.fx-comanda-order .stepper { gap: 0.6rem; }
+.fx-comanda-order .stepper::before { content: 'Quantas?'; margin-right: 0.35rem; font: 600 0.8125rem/1 var(--caps); letter-spacing: 0.2em; text-transform: uppercase; }
+.fx-comanda-order:has(.stepper:not([hidden])) .fx-comanda-wa { display: none; }
+.fx-comanda-wa { border-radius: var(--r-sm); }
+.fx-comanda-added { display: none; margin-top: 1rem; color: var(--selo); }
+.fx-comanda.in-order .fx-comanda-added { display: inline-flex; }
+
+@media (min-width: 64rem) {
+  .fx-ceia { display: flex; align-items: center; min-height: min(var(--screen), 56rem); }
+  .fx-ceia-grid { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: clamp(3rem, 6vw, 6rem); align-items: center; width: 100%; }
+  .fx-ceia-photo img { max-height: 62svh; }
+}
+
+/* ---------- 3. Encomenda ---------- */
+.fx-menu { padding-top: clamp(3.5rem, 7vw, 5.5rem); }
+.fx-menu-head { display: grid; gap: 0.75rem; max-width: 52rem; margin-bottom: clamp(2rem, 4vw, 3rem); }
+.fx-menu-head .h-lg { margin: 0; }
+
+.fx-tablist { display: none; }
+.fx-tabs.is-tabbed .fx-tablist {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-bottom: clamp(1.5rem, 3vw, 2.25rem);
+  border-bottom: 1px solid rgb(48 27 22 / 0.16);
+}
+.fx-tab {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 0.45rem; min-height: 2.75rem;
+  padding: 0.5rem 0.25rem 0.9rem; border: 0; background: none; color: var(--aba-inativa); cursor: pointer; touch-action: manipulation;
+  transition: color 0.2s ease;
+}
+.fx-tab-icon { width: auto; height: 40px; }
+.fx-tab-label { font-size: 0.8125rem; letter-spacing: 0.14em; line-height: 1.2; text-align: center; }
+.fx-tab::after { content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: transparent; transition: background-color 0.2s ease; }
+.fx-tab:hover { color: var(--crosta); }
+.fx-tab[aria-selected='true'] { color: var(--ceia); }
+.fx-tab[aria-selected='true']::after { background: var(--ceia); }
+.fx-tab:focus-visible { outline-offset: -3px; }
+
+.fx-panel { display: grid; gap: 1.25rem; }
+.fx-panel[hidden] { display: none; }
+.fx-tabs:not(.is-tabbed) .fx-panel + .fx-panel { margin-top: clamp(2.5rem, 5vw, 4rem); }
+.fx-panel:focus-visible { outline-offset: 6px; }
+.fx-panel-photo { overflow: hidden; border-radius: var(--r-md); background: var(--crosta); }
+.fx-panel-photo picture, .fx-panel-photo img { display: block; width: 100%; }
+.fx-panel-photo img { aspect-ratio: 16 / 9; object-fit: cover; }
+#painel-carnes img { object-position: 50% 35%; }
+#painel-quilo img { object-position: 52% 62%; }
+.fx-panel .menu-section { margin: 0; }
+.fx-menu .menu-note { max-width: 40em; margin: 0 0 0.5rem; font-weight: 500; font-size: 0.9375rem; }
+.fx-menu .menu-row:first-of-type { padding-top: 0.5rem; }
+
+/* Quantidade por quilo ("250 g", "1,25 kg"): largura fixa e sem quebra, para os botões não andarem. */
+[data-unit] .stepper [data-qty] { min-width: 3.6rem; white-space: nowrap; font-size: 0.875rem; }
+.menu-unit { font-size: 0.62em; letter-spacing: 0.06em; }
+@media (max-width: 40rem) {
+  .menu-row[data-unit] { grid-template-columns: minmax(0, 1fr) auto; row-gap: 0.15rem; }
+  .menu-row[data-unit] .menu-price { grid-column: 1; grid-row: 2; }
+  .menu-row[data-unit] .stepper { grid-column: 2; }
+}
+
+@media (min-width: 40rem) {
+  .fx-tab { flex-direction: row; justify-content: center; gap: 0.75rem; padding: 0.75rem 0.75rem 1rem; }
+  .fx-tab-label { font-size: 0.9375rem; text-align: left; }
+}
+@media (min-width: 48rem) {
+  .fx-panel { grid-template-columns: minmax(0, 0.62fr) minmax(0, 1.38fr); gap: clamp(1.5rem, 3vw, 3rem); align-items: start; }
+  .fx-panel-photo img { aspect-ratio: 4 / 5; }
+}
+
+/* Data no pedido: o mesmo símbolo das etiquetas. */
+.order-mode .fx-mark { width: auto; height: 1.375rem; }
+.order-mode .fx-mark-roma { height: 1.5rem; }
+
+/* ---------- 4. Fechamento ---------- */
+/* O laço fica no .fx-laco antes da seção, na emenda com a encomenda; o topo abre espaço para a metade de baixo dele. */
+.fx-fim { position: relative; overflow: hidden; padding: clamp(4rem, 7vw, 5rem) var(--gutter) clamp(3.5rem, 7vw, 5.5rem); background: var(--noite); color: var(--papel); text-align: center; }
+/* Camadas: cor → grão (::before, -3) → vinheta (::after, -2) → estrelas (-1) → fogos → conteúdo. */
+.fx-fim { isolation: isolate; }
+/* Céu de estrelas (tile gerado na página): mais denso no alto e apagado antes dos passos. No celular, só em volta
+   do título, para não sujar os passos. Fixo, sem animação. */
+.fx-ceu {
+  position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background-position: top center; background-size: 1440px auto; background-repeat: repeat-x;
+  -webkit-mask: linear-gradient(#000 0 22%, transparent 62%); mask: linear-gradient(#000 0 22%, transparent 62%);
+}
+@media (max-width: 47.99rem) {
+  .fx-ceu { -webkit-mask: linear-gradient(#000 0 14%, transparent 30%); mask: linear-gradient(#000 0 14%, transparent 30%); }
+}
+/* Fogos sobre as estrelas; o conteúdo fica por cima e continua clicável. */
+.fx-fogos { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.fx-fim > .wrap { position: relative; }
+@media (prefers-reduced-motion: reduce) { .fx-fogos { display: none; } }
+@media (max-width: 47.99rem) {
+  /* Na quebra, a laçada do "A" de "Ano Novo" sobe: a linha precisa de mais ar. */
+  .fx-wish .fx-wish-b { line-height: 1.6; }
+  .fx-wish .fx-ano { font-size: 1.9em; }
+}
+
+.fx-ouro {
+  background: linear-gradient(105deg, var(--dourado) 0%, var(--farofa) 42%, #e6d08a 52%, var(--farofa) 62%, var(--dourado) 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.fx-wish { display: grid; justify-items: center; margin-top: clamp(0.5rem, 2vw, 1.5rem); font-weight: 400; }
+.fx-wish-a { padding: 0.25em 0.45em 0.05em 0.2em; font-size: clamp(4.25rem, 11vw, 9.5rem); line-height: 0.95; }
+.fx-wish-b { margin-top: -0.1em; font: 400 clamp(1.5rem, 3vw, 2.5rem)/1.1 var(--display); letter-spacing: -0.01em; text-wrap: balance; }
+/* "Ano Novo" no script do "Feliz Natal": maior que a frase (o script tem olho pequeno) e com folga para as laçadas,
+   que ficariam sem o dourado fora da caixa do texto. */
+.fx-ano {
+  display: inline-block; padding: 0.22em 0.3em 0.08em 0.18em; margin: -0.22em -0.14em -0.08em -0.1em;
+  font-size: 2.1em; line-height: 0.8; letter-spacing: 0; vertical-align: -0.04em;
+}
+.fx-steps { display: grid; gap: 1.5rem; max-width: 64rem; margin: clamp(2.5rem, 5vw, 3.5rem) auto 0; text-align: left; }
+.fx-steps li { padding-top: 1rem; border-top: 1px solid rgb(249 248 245 / 0.2); }
+/* Cabeça do passo: número à esquerda como índice e ícone ao lado, os dois pelo topo. A linha tem a altura do ícone
+   mais alto (46px), para os títulos das três colunas ficarem na mesma linha. */
+.fx-step-head { display: flex; align-items: flex-start; gap: 10px; height: 46px; margin-bottom: 14px; }
+/* O topo dos algarismos acompanha o topo do desenho, não a caixa: a caixa da linha (14px/1) tem respiro acima dos
+   algarismos e o SVG ~1px de respiro interno. Medido no screenshot: -4px. */
+.fx-step-n { margin-top: -4px; font: 600 14px/1 var(--caps); letter-spacing: 0.2em; color: #d9b24c; }
+.fx-step-ico { display: block; color: #d9b24c; }
+.fx-step-ico svg { display: block; width: auto; }
+.fx-step-head + .fx-step-t { margin-top: 0; }
+.fx-step-t { margin: 0.5rem 0 0.4rem; font: 400 clamp(1.75rem, 2.6vw, 2.25rem)/1 var(--display); }
+.fx-steps p { color: rgb(249 248 245 / 0.86); line-height: 1.5; }
+.fx-nowrap { white-space: nowrap; }
+.fx-fim-cta { margin-top: clamp(2rem, 4vw, 3rem); }
+.fx-fim-cta .btn { border-radius: var(--r-sm); }
+@media (min-width: 48rem) {
+  .fx-steps { grid-template-columns: repeat(3, 1fr); column-gap: clamp(1.5rem, 4vw, 3.5rem); }
+}
+
+/* ---------- Ajustes do celular ---------- */
+@media (max-width: 40rem) {
+  /* Arroz: a pergunta em cima, as duas opções lado a lado. */
+  .fx-rice legend { float: none; width: 100%; margin: 0 0 0.5rem; }
+  /* Linhas do cardápio: nome inteiro na largura, preço e detalhe embaixo, seletor à direita. */
+  .fx-menu .menu-row[data-item] { grid-template-columns: minmax(0, 1fr) auto; row-gap: 0.2rem; }
+  .fx-menu .menu-row[data-item] .menu-label { grid-column: 1; grid-row: 1; }
+  .fx-menu .menu-row[data-item] .menu-price { grid-column: 1; grid-row: 2; font-size: 1.25rem; }
+  .fx-menu .menu-row[data-item] .menu-detail { grid-column: 1; grid-row: 3; }
+  .fx-menu .menu-row[data-item] .stepper { grid-column: 2; grid-row: 1 / span 3; }
+  .fx-menu .menu-name { letter-spacing: 0.1em; }
+  .fx-tabs.is-tabbed .fx-tablist { grid-template-columns: repeat(3, auto); justify-content: space-between; column-gap: 0.25rem; }
+  .fx-tab { padding-inline: 0.15rem; }
+  .fx-tab-label { font-size: 0.6875rem; letter-spacing: 0.06em; white-space: nowrap; }
+  .fx-cta, .fx-fim-cta .btn { padding-inline: 1.1rem; font-size: 0.9375rem; letter-spacing: 0.1em; }
+  .fx-fim-cta .btn { padding-inline: 0.9rem; font-size: 0.875rem; letter-spacing: 0.06em; white-space: nowrap; }
+}
+@media (max-width: 22.5rem) {
+  /* Telas de 320px: "Acompanhamentos" só cabe sem o espaçamento entre letras. */
+  .fx-tab-label { letter-spacing: 0; }
+}

@@ -1,0 +1,11 @@
+# Fora do upload para a Vercel: segredos, saídas locais e material que o build não usa.
+.env
+.env.*
+!.env.example
+.astro
+dist
+node_modules
+.claude
+.playwright-cli
+assets/natal/raw
+setup-skills.ps1

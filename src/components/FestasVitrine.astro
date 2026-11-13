@@ -1,0 +1,147 @@
+---
+// Vitrine de Natal na home: a mesma guirlanda com o pernil e o mesmo céu de estrelas da página de Natal,
+// as duas datas-limite e o caminho até o cardápio. Só aparece com divulgarFestas (src/data/festas.ts).
+// Ocupa a tela inteira. A partir de 48rem, duas colunas centralizadas como um bloco: a guirlanda e, ao lado,
+// uma coluna só com título, texto, datas e botão. No celular, empilhada.
+import Art from './Art.astro';
+import Photo from './Photo.astro';
+import Icon from './Icon.astro';
+import { ceia, temporada } from '../data/festas';
+import { ceuFundo } from '../data/ceu';
+import pernil from '../../assets/menu-natal-e-reveillon/foto-pernil.jpg';
+import guirlanda from '../../assets/natal/guirlanda.webp';
+
+const path = '/natal-e-reveillon/';
+const dm = (iso: string) => iso.slice(8, 10) + '/' + iso.slice(5, 7);
+const weekday = (iso: string) => new Date(`${iso}T12:00:00`).toLocaleDateString('pt-BR', { weekday: 'long' }).replace('-feira', '');
+const { natal, reveillon } = temporada;
+
+const ceu = ceuFundo();
+---
+
+<section class="vitrine on-dark" aria-labelledby="vitrine-t">
+  <div class="vt-ceu" aria-hidden="true" style={`background-image:${ceu}`}></div>
+  <div class="vt-in">
+    <div class="vt-wreath">
+      <div class="vt-photo">
+        <Photo src={pernil} alt="Pernil suíno assado da ceia de Natal da Cheiro Bom, dourado e fatiado" sizes="(min-width: 75rem) 14rem, (min-width: 48rem) 12rem, 40vw" widths={[240, 400, 560]} />
+      </div>
+      <Art class="vt-art" src={guirlanda} widths={[300, 480, 640, 900]} sizes="(min-width: 75rem) min(28vw, 32rem), (min-width: 48rem) 19rem, min(68vw, 17rem)" />
+    </div>
+
+    <div class="vt-col">
+    <div class="vt-copy">
+      <p class="vt-k">Encomendas abertas</p>
+      <h2 id="vitrine-t" class="vt-title"><span class="script vt-natal">Natal</span> <span class="vt-rev">e Réveillon</span></h2>
+      <p class="vt-lead">Ceia de pernil para {ceia.serve.replace(/^de /, '')} por R$ {ceia.price}, carnes sous vide, acompanhamentos por quilo e tortas família.</p>
+    </div>
+
+    <div class="vt-acao">
+      <p class="vt-k">Encomende até</p>
+      <ul class="vt-datas">
+        <li>
+          <Icon name="sparkles" class="vt-star" />
+          <strong>Natal</strong>
+          <span class="vt-dots" aria-hidden="true"></span>
+          <span class="vt-data">{dm(natal.encomendaAte)} <small>{weekday(natal.encomendaAte)}</small></span>
+        </li>
+        <li>
+          <Icon name="sparkles" class="vt-star" />
+          <strong>Réveillon</strong>
+          <span class="vt-dots" aria-hidden="true"></span>
+          <span class="vt-data">{dm(reveillon.encomendaAte)} <small>{weekday(reveillon.encomendaAte)}</small></span>
+        </li>
+      </ul>
+      <a class="btn vt-cta" href={path}><span>Ver o cardápio de fim de ano</span><Icon name="arrow-right" /></a>
+    </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Mesmo material do fechamento da página de Natal: verde da noite, grão, vinheta e estrelas. */
+  /* Ocupa a altura inteira da tela, com o conteúdo centralizado: quando o visitante chega nela, não aparece
+     o começo da seção seguinte embaixo. */
+  .vitrine {
+    position: relative; isolation: isolate; overflow: hidden; display: flex; align-items: center; min-height: var(--screen);
+    padding: clamp(3.5rem, 7vw, 5.5rem) var(--gutter); background: #10301a; color: var(--papel);
+  }
+  .vt-in { width: 100%; }
+  .vitrine::before {
+    content: ''; position: absolute; inset: 0; z-index: -3; pointer-events: none;
+    background: var(--grao) 0 0 / 200px 200px; mix-blend-mode: overlay; opacity: 0.1;
+  }
+  .vitrine::after {
+    content: ''; position: absolute; inset: 0; z-index: -2; pointer-events: none;
+    background: radial-gradient(ellipse at 50% 50%, transparent 55%, rgb(0 0 0 / 0.08) 100%);
+  }
+  .vt-ceu {
+    position: absolute; inset: 0; z-index: -1; pointer-events: none;
+    background-position: top center; background-size: 1440px auto; background-repeat: repeat-x;
+    -webkit-mask: linear-gradient(#000 0 60%, transparent 100%); mask: linear-gradient(#000 0 60%, transparent 100%);
+  }
+
+  /* Celular: empilhada e centrada. */
+  .vt-in { display: grid; justify-items: center; gap: 2rem; max-width: 88rem; margin-inline: auto; text-align: center; }
+  .vt-wreath { position: relative; width: min(68vw, 17rem); aspect-ratio: 900 / 907; }
+  .vt-col { display: grid; justify-items: center; gap: 1.75rem; width: 100%; max-width: 30rem; }
+  .vt-copy { display: grid; justify-items: center; gap: 1rem; }
+  .vt-acao { display: grid; justify-items: center; gap: 1rem; width: 100%; }
+
+  /* Guirlanda com o pernil no vazio central (medidas da arte: centro 49,42% x 49,56%, foto em 58%). */
+  .vt-photo { position: absolute; left: 20.42%; top: 20.78%; width: 58%; aspect-ratio: 1; overflow: hidden; border-radius: 50%; background: var(--crosta); }
+  .vt-photo :global(picture), .vt-photo :global(img) { display: block; width: 100%; height: 100%; }
+  .vt-photo :global(img) { object-fit: cover; object-position: 42% 66%; scale: 1.45; transform-origin: 42% 66%; }
+  .vt-art { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+  .vt-k { font: 600 0.8125rem/1 var(--caps); letter-spacing: 0.24em; text-transform: uppercase; color: var(--farofa); }
+  .vt-title { display: grid; justify-items: center; font-weight: 400; }
+  .vt-natal {
+    padding: 0.18em 0.35em 0.02em 0.15em; font-size: clamp(4.25rem, 15vw, 6.5rem); line-height: 0.85;
+    background: linear-gradient(105deg, var(--dourado) 0%, var(--farofa) 42%, #e6d08a 52%, var(--farofa) 62%, var(--dourado) 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .vt-rev { margin-top: -0.15em; font: 400 clamp(2rem, 7vw, 2.75rem)/1 var(--display); letter-spacing: -0.01em; }
+  .vt-lead { max-width: 30rem; color: rgb(249 248 245 / 0.86); line-height: 1.55; text-wrap: pretty; }
+
+  /* Datas como linhas do cardápio impresso: nome em versalete, pontilhado até a data. */
+  .vt-datas { display: grid; gap: 0.85rem; width: 100%; padding-block: 1rem; border-block: 1px solid rgb(249 248 245 / 0.18); }
+  .vt-datas li { display: grid; grid-template-columns: 1.5rem auto minmax(1rem, 1fr) auto; align-items: baseline; column-gap: 0.6rem; text-align: left; }
+  /* A mesma estrela da navbar, no mesmo dourado e com o mesmo brilho lento (desligado com reduced-motion). */
+  .vt-datas :global(.vt-star) { align-self: center; justify-self: center; width: 1.05rem; height: 1.05rem; color: var(--farofa); }
+  @media (prefers-reduced-motion: no-preference) {
+    .vt-datas :global(.vt-star) { animation: b-brilho 2.8s ease-in-out infinite; }
+    .vt-datas li + li :global(.vt-star) { animation-delay: -1.4s; }
+  }
+  .vt-datas strong { font: 600 0.9375rem/1 var(--caps); letter-spacing: 0.16em; text-transform: uppercase; color: var(--farofa); }
+  .vt-dots { border-bottom: 1px dotted rgb(249 248 245 / 0.35); translate: 0 -0.3em; }
+  .vt-data { font: 400 1.5rem/1 var(--display); font-variant-numeric: lining-nums; white-space: nowrap; }
+  .vt-data small { margin-left: 0.2em; font: 500 0.8125rem/1 var(--text); color: rgb(249 248 245 / 0.72); }
+  .vt-cta { margin-top: 0.5rem; border-radius: var(--r-sm); }
+
+  @media (max-width: 29.99rem) {
+    .vt-cta { padding-inline: 1rem; font-size: 0.9375rem; letter-spacing: 0.1em; white-space: nowrap; }
+  }
+  @media (max-width: 22.5rem) {
+    .vt-cta { padding-inline: 0.8rem; font-size: 0.8125rem; letter-spacing: 0.06em; }
+  }
+
+  /* A partir de 48rem: guirlanda | coluna de texto, as duas centralizadas como um bloco. */
+  @media (min-width: 48rem) {
+    .vt-in { grid-template-columns: auto minmax(0, 30rem); justify-content: center; align-items: center; column-gap: clamp(2.5rem, 6vw, 6rem); text-align: left; }
+    .vt-wreath { width: clamp(16rem, 30vw, 19rem); }
+    .vt-col, .vt-copy, .vt-title, .vt-acao { justify-items: start; }
+    .vt-natal { margin-left: -0.15em; }
+  }
+  /* Tela larga: tudo cresce com a tela, limitado pela altura para caber em telas baixas. */
+  @media (min-width: 75rem) {
+    .vt-in { grid-template-columns: auto minmax(0, 34rem); }
+    .vt-col { max-width: 34rem; gap: 2rem; }
+    .vt-wreath { width: min(clamp(20rem, 28vw, 32rem), 66svh); }
+    .vt-natal { font-size: min(clamp(5.5rem, 7.5vw, 9rem), 14svh); }
+    .vt-rev { font-size: min(clamp(2.75rem, 3.5vw, 4rem), 6.5svh); }
+    .vt-lead { font-size: 1.125rem; }
+    .vt-data { font-size: 1.75rem; }
+    .vt-cta { justify-self: stretch; justify-content: space-between; padding-inline: 1.25rem; white-space: nowrap; }
+  }
+</style>

@@ -1,0 +1,61 @@
+---
+// Menu "Letreiro": faixa reta, links em versalete e selo pendurado no centro, como a placa da loja.
+// O topo segue as perguntas do cliente. No celular, o painel mostra essas seções e, abaixo, as categorias do cardápio.
+// Na temporada de fim de ano (divulgarFestas), o Natal ganha destaque: primeiro link da barra e cartão no topo do painel.
+import { Image } from 'astro:assets';
+import Icon from './Icon.astro';
+import { business } from '../data/business';
+import { pages, sections } from '../data/pages';
+import { divulgarFestas, temporada } from '../data/festas';
+import logo from '../../assets/brand/logo.png';
+
+interface Props {
+  orderLink: string;
+}
+const { orderLink } = Astro.props;
+const path = Astro.url.pathname;
+const current = (p: string) => (path === p ? 'page' : undefined);
+const natalPath = '/natal-e-reveillon/';
+// No painel do celular o Natal já aparece no cartão de destaque: sai da lista de produtos para não repetir.
+const products = pages.filter((p) => p.path !== '/cardapio/' && !(divulgarFestas && p.path === natalPath));
+const ateNatal = temporada.natal.encomendaAte.slice(8, 10) + '/' + temporada.natal.encomendaAte.slice(5, 7);
+const home = `${business.name}, página inicial`;
+---
+
+<header class="site-header nav-b on-dark" data-header>
+  <nav class="b-bar" aria-label="Principal">
+    <ul class="b-links b-left">
+      {divulgarFestas && <li><a class="b-natal" href={natalPath} aria-current={current(natalPath)}><Icon name="sparkles" /><span>Ceias</span></a></li>}
+      {sections.slice(0, 2).map((item) => <li><a href={item.path} aria-current={current(item.path)}>{item.name}</a></li>)}
+    </ul>
+    <a class="b-seal" href="/" aria-label={home}><Image src={logo} alt="" width={128} height={128} loading="eager" /></a>
+    <ul class="b-links b-right">
+      {sections.slice(2).map((item) => <li><a href={item.path} aria-current={current(item.path)}>{item.name}</a></li>)}
+      <li><a class="b-order" href={orderLink}><Icon name="whatsapp" /><span>Pedir</span></a></li>
+    </ul>
+    <a class="b-order b-order-m" href={orderLink}><Icon name="whatsapp" /><span>Pedir</span></a>
+    <button class="nav-word b-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="menu-b" aria-label="Abrir menu">
+      <span class="nav-word-label">Menu</span><span class="burger" aria-hidden="true"><i></i><i></i></span>
+    </button>
+  </nav>
+  <div class="b-stack" aria-hidden="true"><span></span><span></span></div>
+  <nav class="b-panel" id="menu-b" aria-label="Menu do celular" data-lenis-prevent>
+    {divulgarFestas && (
+      <a class="b-natal-m" href={natalPath} aria-current={current(natalPath)} data-nav-close>
+        <span class="b-natal-t"><span class="script">Natal</span> e Réveillon</span>
+        <span class="b-natal-s">Encomendas até {ateNatal}</span>
+        <Icon name="arrow-right" />
+      </a>
+    )}
+    <ol>
+      {sections.map((item, i) => (
+        <li><a href={item.path} aria-current={current(item.path)} data-nav-close><span>{item.name}</span><sup>0{i + 1}</sup></a></li>
+      ))}
+    </ol>
+    <p class="b-sub caps">No cardápio</p>
+    <ul class="b-products">
+      {products.map((item) => <li><a href={item.path} aria-current={current(item.path)} data-nav-close>{item.name}</a></li>)}
+    </ul>
+    <p class="b-foot"><Icon name="clock" /> {business.hoursText}<br /><Icon name="map-pin" /> {business.street}</p>
+  </nav>
+</header>

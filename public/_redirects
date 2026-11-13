@@ -1,0 +1,5 @@
+# Netlify: endereços curtos para a página de Natal (301 permanente). A barra final das páginas a Netlify já resolve.
+/natal        /natal-e-reveillon/  301
+/natal/       /natal-e-reveillon/  301
+/reveillon    /natal-e-reveillon/  301
+/reveillon/   /natal-e-reveillon/  301

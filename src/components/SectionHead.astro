@@ -1,0 +1,24 @@
+---
+// Cabeçalho padrão de seção: rótulo, título e resumo, sempre na mesma ordem e no mesmo lugar.
+// Quem passa os olhos pela página lê só estes títulos, então cada um responde uma pergunta.
+// `ramo` põe o alecrim da marca acima do rótulo, só nas seções que abrem um novo assunto.
+import Sketch from './Sketch.astro';
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  title: string;
+  lead?: string;
+  level?: 'h2' | 'h3';
+  ramo?: boolean;
+}
+const { id, eyebrow, title, lead, level: Heading = 'h2', ramo = false } = Astro.props;
+---
+
+<div class="sec-head">
+  {ramo && <Sketch name="alecrim" class="sec-ramo" />}
+  <p class="eyebrow caps">{eyebrow}</p>
+  <Heading id={id} class="display h-lg">{title}</Heading>
+  {lead && <p class="lead">{lead}</p>}
+  {Astro.slots.has('default') && <div class="sec-head-aside"><slot /></div>}
+</div>

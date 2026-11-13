@@ -1,0 +1,55 @@
+---
+// "Como pedir": a mesma explicação na home e nas páginas de produto.
+import { business, whatsappLink } from '../data/business';
+import Icon from './Icon.astro';
+import SectionHead from './SectionHead.astro';
+import Sketch from './Sketch.astro';
+
+interface Props {
+  message: string;
+  tone?: 'verde' | 'papel';
+  id?: string;
+  showMenuLink?: boolean;
+}
+const { message, tone = 'papel', id = 'como-pedir', showMenuLink = true } = Astro.props;
+const steps = [
+  { sketch: 'cardapio', title: 'Escolha', text: 'Veja o cardápio e monte o pedido. Se preferir, mande a lista direto no WhatsApp.' },
+  { sketch: 'mensagem', title: 'Envie no WhatsApp', text: `Pelo ${business.phoneDisplay}. Dá para encomendar durante a semana e garantir o seu.` },
+  { sketch: 'sacola', title: 'Receba no domingo', text: 'Retire na loja ou receba em casa, no horário combinado.' },
+];
+---
+
+<section class:list={['band', tone, 'how', { 'on-dark': tone === 'verde' }]} id={id} aria-labelledby={`${id}-t`}>
+  <div class="wrap">
+    <SectionHead id={`${id}-t`} eyebrow="Como pedir" title="Do WhatsApp para a sua mesa" lead="Todo pedido é feito pelo WhatsApp. Você escolhe se retira na loja ou recebe em casa." />
+    <div class="how-grid">
+      <ol class="steps">
+        {steps.map((s) => (
+          <li>
+            <Sketch name={s.sketch} />
+            <div>
+              <h3 class="caps">{s.title}</h3>
+              <p>{s.text}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+      <dl class="modes">
+        <div>
+          <dt><Icon name="store" /><span class="caps">Retirada</span></dt>
+          <dd class="modes-time">9h às 14h</dd>
+          <dd>Domingos, na {business.street}.</dd>
+        </div>
+        <div>
+          <dt><Icon name="bike" /><span class="caps">Delivery</span></dt>
+          <dd class="modes-time">11h às 14h</dd>
+          <dd>Domingos. Confirme sua região e a taxa no WhatsApp.</dd>
+        </div>
+      </dl>
+    </div>
+    <p class="how-actions">
+      <a class:list={['btn', { 'btn-verde': tone === 'papel' }]} href={whatsappLink(message)}><Icon name="whatsapp" /><span>Pedir no WhatsApp</span></a>
+      {showMenuLink && <a class="link with-icon" href="/cardapio/">Montar o pedido pelo cardápio<Icon name="arrow-right" /></a>}
+    </p>
+  </div>
+</section>

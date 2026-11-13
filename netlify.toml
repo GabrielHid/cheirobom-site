@@ -1,0 +1,8 @@
+# Usado quando o site é publicado pela Netlify a partir do código (Git ou CLI).
+# No upload manual (arrastar a pasta dist), valem public/_redirects e public/_headers, que o build copia para dist.
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"

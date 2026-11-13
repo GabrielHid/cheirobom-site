@@ -1,0 +1,54 @@
+---
+import type { Section } from '../data/menu';
+import Icon from './Icon.astro';
+import Sketch from './Sketch.astro';
+import { sketchFor } from '../data/sketches';
+
+interface Props {
+  section: Section;
+  heading?: 'h2' | 'h3';
+  hideTitle?: boolean;
+  orderable?: boolean;
+}
+
+const { section, heading: Heading = 'h2', hideTitle = false, orderable = false } = Astro.props;
+---
+
+<section class="menu-section" id={section.id} aria-label={hideTitle ? section.title : undefined}>
+  {!hideTitle && (
+    <Heading class="menu-title">
+      <Sketch name={sketchFor(section.id)} />
+      <span class="script h-script">{section.title}</span>
+    </Heading>
+  )}
+  {section.note && <p class="menu-note">{section.note}</p>}
+  <ul>
+    {section.items.map((item, i) => {
+      const fullName = item.size ? `${item.name} (${item.size})` : item.name;
+      return (
+        <li
+          class="menu-row"
+          data-item={orderable ? `${section.id}-${i}` : undefined}
+          data-name={orderable ? fullName : undefined}
+          data-price={orderable ? item.price : undefined}
+          data-step={orderable && item.unit === 'kg' ? '0.25' : undefined}
+          data-unit={orderable ? item.unit : undefined}
+        >
+          <span class="menu-label">
+            <span class="caps menu-name">{item.name}</span>
+            {item.size && <span class="menu-size"> · {item.size}</span>}
+          </span>
+          <span class="price menu-price">R$ {item.price}{item.unit && <small class="menu-unit"> /{item.unit}</small>}</span>
+          {item.detail && <span class="menu-detail">{item.detail}</span>}
+          {orderable && (
+            <div class="stepper" data-stepper hidden>
+              <button type="button" data-minus aria-label={`Tirar ${fullName}`} disabled><Icon name="minus" /></button>
+              <span data-qty aria-live="polite">{item.unit ? '0 kg' : '0'}</span>
+              <button type="button" data-plus aria-label={`Adicionar ${fullName}`}><Icon name="plus" /></button>
+            </div>
+          )}
+        </li>
+      );
+    })}
+  </ul>
+</section>

@@ -1,0 +1,74 @@
+---
+// Painel do pedido. Fica oculto até o JS iniciar: sem JS, o cardápio é uma página comum.
+// O padrão é o domingo (retirada ou delivery). Páginas sazonais trocam as opções, o título da escolha e a chave do carrinho.
+import Icon from './Icon.astro';
+
+// `mark`: HTML de um símbolo próprio da página no lugar do ícone (decorativo, já com aria-hidden).
+type Option = { value: string; label: string; note: string; icon?: string; mark?: string; checked?: boolean };
+interface Props {
+  options?: Option[];
+  legend?: string;
+  modeLabel?: string;
+  intro?: string;
+  storageKey?: string;
+  notesPlaceholder?: string;
+  note?: string;
+}
+
+const {
+  options = [
+    { value: 'Retirada', label: 'Retirada', note: 'das 9h às 14h', icon: 'store', checked: true },
+    { value: 'Delivery', label: 'Delivery', note: 'das 11h às 14h', icon: 'bike' },
+  ],
+  legend = 'Como você quer receber?',
+  modeLabel = 'Forma',
+  intro = 'Olá! Quero fazer este pedido na Cheiro Bom:',
+  storageKey = 'cheirobom-pedido',
+  notesPlaceholder = 'Molho do nhoque, sabor da empada, horário',
+  note = 'A taxa de entrega é confirmada no WhatsApp.',
+} = Astro.props;
+const hasDelivery = options.some((o) => o.value === 'Delivery');
+---
+
+<aside class="order is-empty" data-order data-key={storageKey} data-intro={intro} data-mode-label={modeLabel} data-lenis-prevent aria-label="Seu pedido" hidden>
+  <div class="order-head">
+    <h2 class="caps"><Icon name="shopping-bag" /> Seu pedido</h2>
+    <button class="order-close" type="button" data-order-close aria-label="Fechar pedido"><Icon name="x" /></button>
+  </div>
+  <p class="order-empty">Toque no + dos itens para montar seu pedido.</p>
+  <div class="order-body">
+    <ul class="order-lines" data-lines></ul>
+    <p class="order-total"><span>Total dos itens</span> <strong class="price" data-total aria-live="polite">R$ 0</strong></p>
+    <fieldset class="order-mode">
+      <legend>{legend}</legend>
+      {options.map((o, i) => (
+        <label>
+          <input type="radio" name="forma" value={o.value} checked={o.checked ?? i === 0} />
+          {o.mark ? <Fragment set:html={o.mark} /> : o.icon && <Icon name={o.icon} />}
+          <span>{o.label}<small>{o.note}</small></span>
+        </label>
+      ))}
+    </fieldset>
+    {hasDelivery && (
+      <label class="order-field" data-address-wrap hidden>
+        Endereço de entrega
+        <textarea data-address rows="2" autocomplete="street-address"></textarea>
+      </label>
+    )}
+    <label class="order-field">
+      Observações
+      <textarea data-notes rows="2" placeholder={notesPlaceholder}></textarea>
+    </label>
+    <p class="order-note">{note}</p>
+    <a class="btn btn-verde order-send" data-send href="https://wa.me/5516997656146"><Icon name="whatsapp" /><span>Enviar pedido no WhatsApp</span></a>
+  </div>
+</aside>
+
+<div class="order-bar" data-order-bar hidden>
+  <button type="button" data-order-toggle aria-expanded="false">
+    <Icon name="shopping-bag" />
+    <span data-count>0 itens</span>
+    <strong class="price" data-total>R$ 0</strong>
+    <span class="order-bar-cta">Ver pedido <Icon name="chevron-down" /></span>
+  </button>
+</div>

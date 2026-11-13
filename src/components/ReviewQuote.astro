@@ -1,0 +1,20 @@
+---
+import { reviewsFor } from '../data/reviews';
+
+interface Props {
+  topic: string;
+}
+
+const items = reviewsFor(Astro.props.topic);
+---
+
+{items.length > 0 && (
+  <div class="quotes">
+    {items.map((r) => (
+      <figure>
+        <blockquote>{r.text}</blockquote>
+        <figcaption>{r.author}, no Google</figcaption>
+      </figure>
+    ))}
+  </div>
+)}

@@ -1,0 +1,333 @@
+---
+// Home organizada pelas perguntas do cliente, na ordem em que ele faz:
+// 1. O que é e como peço? (hero + faixa de fatos)  2. O que tem e quanto custa? (cardápio)
+// 3. Como funciona? (como pedir)  4. Posso confiar? (sobre e avaliações)  5. Dúvidas  6. Onde fica?
+// Na temporada de fim de ano (divulgarFestas), o Natal entra em dois pontos: etiqueta acima do título e vitrine
+// logo depois da faixa de fatos.
+import Base from '../layouts/Base.astro';
+import FestasVitrine from '../components/FestasVitrine.astro';
+import { divulgarFestas, temporada } from '../data/festas';
+import ramo4 from '../../assets/natal/ramo-4.webp';
+import { getImage } from 'astro:assets';
+import Photo from '../components/Photo.astro';
+import PreloadImage from '../components/PreloadImage.astro';
+import Icon from '../components/Icon.astro';
+import Faq from '../components/Faq.astro';
+import Facts from '../components/Facts.astro';
+import SectionHead from '../components/SectionHead.astro';
+import Sketch from '../components/Sketch.astro';
+import { sketchFor } from '../data/sketches';
+import HowToOrder from '../components/HowToOrder.astro';
+import ReviewQuote from '../components/ReviewQuote.astro';
+import { business, fullAddress, mapsUrl, whatsappLink } from '../data/business';
+import { acompanhamentos, almoco, bebidas, carnes, congelados, massas, sobremesas, type Section } from '../data/menu';
+import { faqPage, website } from '../data/schema';
+import frango from '../../assets/raw/frango-assado.jpg';
+import recorte from '../../assets/generated/frango-recorte.png';
+import costela from '../../assets/raw/costela.jpg';
+import coxa from '../../assets/raw/coxa-sobrecoxa.jpg';
+import farofa from '../../assets/raw/farofa.jpg';
+import nhoque from '../../assets/raw/nhoque.jpg';
+import macarrao from '../../assets/raw/macarrao.jpg';
+import pudim from '../../assets/raw/pudim.jpg';
+import mesa from '../../assets/raw/imagem-background.jpg';
+import salada from '../../assets/raw/salada-marroquina.jpg';
+import kibe from '../../assets/raw/kibe-e-empadao.jpg';
+import letreiro from '../../assets/generated/letreiro.png';
+import fachada from '../../assets/raw/fachada.jpg';
+
+// O ramo da etiqueta de Natal tem 24px de altura: versão de 64px em vez do original (50 KiB).
+const ramoMini = await getImage({ src: ramo4, height: 64, format: 'webp' });
+// Foto do hero (LCP): as mesmas medidas no <Photo> e no preload do <head>.
+const heroWidths = [480, 768, 1080, 1536];
+const heroSizes = '(min-width: 48rem) 32vw, 92vw';
+const ateNatal = temporada.natal.encomendaAte.slice(8, 10) + '/' + temporada.natal.encomendaAte.slice(5, 7);
+const message = 'Olá! Quero encomendar o almoço de domingo.';
+
+// Os três pratos que mais vendem, do maior para o menor destaque.
+const highlights = [
+  {
+    href: '/cardapio/#carnes', photo: frango, alt: 'Frango assado dourado sobre tora de madeira',
+    tag: 'O carro-chefe', name: 'Frango assado', price: 'R$ 55', note: 'Inteiro, com farofa de brinde. Kit com maionese por R$ 83.',
+    cta: 'Ver o frango assado',
+  },
+  {
+    href: '/cardapio/#almoco-completo', photo: mesa, alt: 'Mesa vista de cima com frango assado, farofa e maionese sobre tábua de madeira',
+    tag: 'Para a família', name: 'Almoço completo', price: 'R$ 83 a R$ 165', note: 'Carne, acompanhamentos e farofa para até 3 ou até 5 pessoas.',
+    cta: 'Ver os kits',
+  },
+  {
+    href: '/cardapio/#carnes', photo: costela, alt: 'Costela bovina sous vide com farofa em prato azul fosco',
+    tag: 'Cozimento lento', name: 'Costela sous vide', price: 'R$ 65', note: 'Bovina ou suína, porção de 500g.',
+    cta: 'Ver a costela',
+  },
+];
+
+// Índice do cardápio: mostra o alcance inteiro de uma vez, com faixa de preço.
+const range = (s: Section) => {
+  const prices = s.items.map((i) => i.price);
+  const min = Math.min(...prices);
+  const max = Math.max(...prices);
+  return min === max ? `R$ ${min}` : `R$ ${min} a R$ ${max}`;
+};
+const plural = (n: number) => (n === 1 ? '1 opção' : `${n} opções`);
+const index = [
+  { s: carnes, href: '/cardapio/#carnes' },
+  { s: almoco, href: '/cardapio/#almoco-completo' },
+  { s: acompanhamentos, href: '/cardapio/#acompanhamentos' },
+  { s: massas, href: '/cardapio/#massas' },
+  { s: sobremesas, href: '/cardapio/#sobremesas' },
+  { s: bebidas, href: '/cardapio/#bebidas' },
+  { s: congelados, href: '/cardapio/#salgados-congelados' },
+].map(({ s, href }) => ({ title: s.title, href, meta: `${plural(s.items.length)} · ${range(s)}`, sketch: sketchFor(s.id) }));
+index.push({ title: 'Feijoada', href: '/cardapio/#feijoada', meta: 'Sob consulta', sketch: sketchFor('feijoada') });
+
+// Os preços do hero saem do mesmo cardápio do resto do site: mudou no menu.ts, muda aqui.
+const priceOf = (s: Section, name: string) => {
+  const item = s.items.find((i) => i.name === name);
+  if (!item) throw new Error(`Item do hero não está no cardápio: ${name}`);
+  return item.price;
+};
+const almocoPrices = almoco.items.map((i) => i.price);
+// Os preços do hero levam à seção do cardápio desta página (#cardapio), não às páginas de produto.
+const heroPrices = [
+  { name: 'Frango assado', note: 'Inteiro, farofa de brinde', price: `${priceOf(carnes, 'Frango Assado')}`, href: '#cardapio' },
+  { name: 'Kit frango completo', note: 'Com 500g de maionese', price: `${priceOf(carnes, 'Kit Frango Assado Completo')}`, href: '#cardapio' },
+  { name: 'Costela sous vide', note: 'Bovina ou suína, 500g', price: `${priceOf(carnes, 'Costela Bovina')}`, href: '#cardapio' },
+  { name: 'Almoço completo', note: 'Para até 3 ou até 5 pessoas', price: `${Math.min(...almocoPrices)} a ${Math.max(...almocoPrices)}`, href: '#cardapio' },
+];
+
+const gallery = [
+  { src: coxa, alt: 'Coxa e sobrecoxa assadas em travessa de barro', cap: 'Coxa e sobrecoxa' },
+  { src: farofa, alt: 'Farofa com linguiça e cebolinha em cumbuca de barro', cap: 'Farofa' },
+  { src: nhoque, alt: 'Nhoque de batata ao molho com queijo ralado', cap: 'Nhoque de batata' },
+  { src: salada, alt: 'Salada marroquina em cumbuca de barro', cap: 'Salada marroquina' },
+  { src: macarrao, alt: 'Macarrão à bolonhesa em prato branco sobre toalha xadrez azul', cap: 'Macarrão' },
+  { src: kibe, alt: 'Kibe de forno e empadão em formas de alumínio com o selo da Cheiro Bom', cap: 'Kibe e empadão' },
+  { src: pudim, alt: 'Pudim de leite condensado inteiro ao lado do cardápio da Cheiro Bom', cap: 'Pudim' },
+];
+
+const embedUrl = `https://www.google.com/maps?q=${encodeURIComponent(`${business.name}, ${business.street}, ${business.city}, ${business.region}`)}&output=embed`;
+const faq = [
+  { q: 'A rotisseria abre em outros dias?', a: 'Por enquanto, só aos domingos. Em datas especiais como Natal, Ano-Novo e Sexta-feira Santa há cardápio e horário próprios, anunciados com antecedência.' },
+  { q: 'Dá para encomendar antes do domingo?', a: 'Sim, a encomenda antecipada é feita pelo WhatsApp (16) 99765-6146.' },
+  { q: 'Tem delivery em Araraquara?', a: 'Sim, aos domingos, das 11h às 14h. Confirme sua região e a taxa pelo WhatsApp. A retirada na loja vai das 9h às 14h.' },
+  { q: 'Quantas pessoas o almoço completo serve?', a: 'Os kits de coxa e sobrecoxa servem até 3 pessoas. Os kits de frango assado e de costela bovina servem até 5.' },
+  { q: 'Tem feijoada todo domingo?', a: 'A feijoada depende da disponibilidade. Pergunte pelo WhatsApp antes de encomendar.' },
+];
+---
+
+<Base
+  title="Cheiro Bom Rotisseria | Frango Assado em Araraquara"
+  description={`Frango assado, costela sous vide e almoço completo aos domingos em Araraquara. Retire na loja ou receba em casa. Encomende pelo WhatsApp ${business.phoneDisplay}.`}
+  schema={[website(), faqPage(faq, '/')]}
+  whatsappMessage={message}
+>
+  <PreloadImage slot="head" src={frango} widths={heroWidths} sizes={heroSizes} quality={42} />
+  <!-- Hero "Cardápio aberto": a primeira página do cardápio impresso. Título, frango no arco, preços. -->
+  <section class="hero" aria-labelledby="titulo">
+    <Sketch name="alecrim" class="hero-ramo" />
+    <div class="hero-grid">
+      <div class="hero-copy">
+        {/* Etiqueta de Natal no celular: no topo, antes do título (no desktop ela fica na coluna da direita). */}
+        {divulgarFestas && (
+          <a class="hero-natal hero-natal-m" href="/natal-e-reveillon/">
+            <img src={ramoMini.src} width={Math.round((24 * ramo4.width) / ramo4.height)} height="24" alt="" aria-hidden="true" decoding="async" />
+            <span class="hn-txt"><span>Natal e Réveillon</span><span class="hero-natal-sep" aria-hidden="true"> · </span><span>até {ateNatal}</span></span>
+            <Icon name="arrow-right" />
+          </a>
+        )}
+        <h1 id="titulo">
+          <span class="script hero-script">Domingo</span>
+          <span class="display hero-head">é dia de frango assado</span>
+          <span class="hero-line">Almoço pronto da Cheiro Bom, rotisseria em Araraquara. Retire na loja ou receba em casa.</span>
+        </h1>
+        <div class="hero-actions">
+          <a class="btn btn-verde btn-main" href={whatsappLink(message)}><Icon name="whatsapp" /><span>Pedir no WhatsApp</span></a>
+          <a class="link with-icon hero-more" href="/cardapio/"><span>Ver o cardápio</span><Icon name="arrow-right" /></a>
+        </div>
+      </div>
+
+      <div class="hero-arch">
+        <Photo class="hero-photo" src={frango} priority quality={42} sizes={heroSizes} widths={heroWidths} alt="Frango assado dourado sobre tora de madeira, com maionese, farofa e folhagem ao fundo" />
+        <Photo class="hero-cut" src={recorte} eager quality={30} sizes="(min-width: 48rem) 32vw, 92vw" widths={[480, 768, 1080]} alt="" />
+        <p class="status" data-status>Domingo, das 9h às 14h</p>
+      </div>
+
+      <div class="hero-side">
+        {/* Etiqueta de Natal no desktop: acima de "Carnes", fora do grupo de preços. */}
+        {divulgarFestas && (
+          <a class="hero-natal hero-natal-d" href="/natal-e-reveillon/">
+            <img src={ramoMini.src} width={Math.round((24 * ramo4.width) / ramo4.height)} height="24" alt="" aria-hidden="true" decoding="async" />
+            <span class="hn-txt"><span>Natal e Réveillon</span><span class="hero-natal-sep" aria-hidden="true"> · </span><span>até {ateNatal}</span></span>
+            <Icon name="arrow-right" />
+          </a>
+        )}
+        <div class="hero-card" role="group" aria-labelledby="hero-carnes">
+          <p class="script hero-cat" id="hero-carnes">Carnes</p>
+          <ul class="hero-prices">
+            {heroPrices.map((row) => (
+              <li>
+                <a href={row.href}>
+                  <span class="caps hero-item">{row.name}<small>{row.note}</small></span>
+                  <span class="hero-dots" aria-hidden="true"></span>
+                  <span class="price"><small>R$</small> {row.price}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="rest">
+    <!-- Os fatos que o cliente procura primeiro, antes de qualquer rolagem longa -->
+    <div class="factbar farofa">
+      <div class="wrap">
+        <Facts items={[{ icon: 'whatsapp', label: 'Pedidos', value: business.phoneDisplay }]} class="facts-bar" />
+      </div>
+    </div>
+
+    {divulgarFestas && <FestasVitrine />}
+
+    <section class="band papel menu-overview" id="cardapio" aria-labelledby="cardapio-t">
+      <div class="wrap">
+        <SectionHead ramo id="cardapio-t" eyebrow="Cardápio" title="O que tem no domingo" lead="Frango assado, costela, acompanhamentos, massas e sobremesas. Os preços estão todos no site.">
+          <a class="link with-icon" href="/cardapio/">Ver o cardápio completo<Icon name="arrow-right" /></a>
+        </SectionHead>
+
+        <ul class="highlights">
+          {highlights.map((h, i) => (
+            <li class:list={['hl', { 'hl-main': i === 0 }]}>
+              <a href={h.href}>
+                <div class="hl-photo"><Photo src={h.photo} alt={h.alt} sizes={i === 0 ? '(min-width: 48rem) 55vw, 100vw' : '(min-width: 48rem) 35vw, 100vw'} widths={[480, 768, 1080]} /></div>
+                <div class="hl-copy">
+                  <p class="caps hl-tag">{h.tag}</p>
+                  <h3 class="hl-name">{h.name}</h3>
+                  <p class="price hl-price">{h.price}</p>
+                  <p class="hl-note">{h.note}</p>
+                  <span class="hl-go">{h.cta}<Icon name="arrow-right" /></span>
+                </div>
+              </a>
+            </li>
+          ))}
+        </ul>
+
+        <div class="menu-index">
+          <h3 class="caps menu-index-title">Todo o cardápio</h3>
+          <ul>
+            {index.map((c) => (
+              <li>
+                <a href={c.href}>
+                  <Sketch name={c.sketch} />
+                  <span class="script menu-index-name">{c.title}</span>
+                  <span class="menu-index-meta">{c.meta}</span>
+                  <Icon name="arrow-right" />
+                </a>
+              </li>
+            ))}
+          </ul>
+          <p class="menu-index-cta"><a class="btn btn-verde" href="/cardapio/"><Icon name="shopping-bag" /><span>Montar meu pedido</span></a></p>
+        </div>
+      </div>
+    </section>
+
+    <HowToOrder message={message} tone="verde" />
+
+    <section class="band papel about" id="sobre" aria-labelledby="sobre-t">
+      <div class="wrap about-grid">
+        <div class="about-copy">
+          <SectionHead ramo id="sobre-t" eyebrow="Sobre a Cheiro Bom" title="Deixe a cozinha com a gente." lead="Há mais de 6 anos, nossa família prepara o almoço de domingo de Araraquara. Frango assado no forno, costela no sous vide e acompanhamentos feitos na nossa cozinha." />
+          <dl class="stats" id="avaliacoes">
+            <div><dt>anos de cozinha em família</dt><dd><span data-countup="6">6</span>+</dd></div>
+            <div><dt>de nota no Google, em {business.rating.asOf}</dt><dd><span data-countup="5" data-decimals="1">{business.rating.value}</span></dd></div>
+            <div><dt>avaliações de clientes</dt><dd><span data-countup={business.rating.count}>{business.rating.count}</span></dd></div>
+          </dl>
+          <p class="after"><a class="link with-icon" href={business.googleProfile ?? mapsUrl}>Ler as avaliações no Google<Icon name="arrow-up-right" /></a></p>
+          <ReviewQuote topic="home" />
+        </div>
+        <figure class="about-photo">
+          <Photo src={fachada} alt="Fachada da Cheiro Bom Rotisseria: balcão de madeira aberto para a rua, paredes verdes e luminárias acesas, com um forno de inox ao lado" sizes="(min-width: 48rem) 40vw, 100vw" widths={[480, 768, 1080, 1229]} />
+          <figcaption class="caps">Nossa loja na Rua Nove de Julho</figcaption>
+        </figure>
+      </div>
+      <div class="gallery-wrap" id="galeria" data-gallery>
+        <div class="gallery-head">
+          <h3 class="caps gallery-title">Da nossa cozinha <span class="gallery-count">{String(gallery.length).padStart(2, '0')} pratos</span></h3>
+          <p class="gallery-hint caps" aria-hidden="true">Deslize para ver mais <Icon name="arrow-right" /></p>
+          <div class="gallery-nav">
+            <button type="button" data-gallery-prev aria-label="Fotos anteriores" disabled><Icon name="arrow-left" /></button>
+            <button type="button" data-gallery-next aria-label="Próximas fotos"><Icon name="arrow-right" /></button>
+          </div>
+        </div>
+        <div class="gallery" tabindex="0" role="group" aria-label="Fotos dos pratos, role para o lado">
+          {gallery.map((g, i) => (
+            <figure>
+              <div class="gallery-frame"><Photo src={g.src} alt={g.alt} sizes="(min-width: 48rem) 16rem, 62vw" widths={[480, 768]} /></div>
+              <figcaption class="caps"><span>{String(i + 1).padStart(2, '0')}</span>{g.cap}</figcaption>
+            </figure>
+          ))}
+        </div>
+        <div class="gallery-progress" aria-hidden="true"><i data-gallery-bar></i></div>
+      </div>
+    </section>
+
+    <section class="band verde on-dark faq-band" id="faq" aria-labelledby="faq-title">
+      <div class="wrap"><Faq items={faq} /></div>
+    </section>
+
+    <section class="band papel place-band" id="contato" aria-labelledby="onde">
+      <div class="wrap place-grid">
+        <div class="place-copy">
+          <SectionHead id="onde" eyebrow="Onde fica" title="Rua Nove de Julho, 3925" />
+          <dl class="place">
+            <div class="place-wide"><dt class="caps"><Icon name="map-pin" /> Endereço</dt><dd><a href={mapsUrl}>{fullAddress}</a></dd></div>
+            <div><dt class="caps"><Icon name="clock" /> Horário</dt><dd>{business.hoursText}</dd></div>
+            <div><dt class="caps"><Icon name="bike" /> Delivery</dt><dd>{business.deliveryText}</dd></div>
+            <div><dt class="caps"><Icon name="whatsapp" /> WhatsApp</dt><dd><a href={whatsappLink(message)}>{business.phoneDisplay}</a></dd></div>
+            <div><dt class="caps"><Icon name="store" /> Modalidades</dt><dd>Retirada, delivery e encomenda</dd></div>
+          </dl>
+          <p class="after"><a class="btn btn-verde" href={mapsUrl}><Icon name="navigation" /><span>Como chegar</span></a></p>
+        </div>
+        <div class="place-media">
+          <div class="map" data-map={embedUrl}></div>
+          <Photo class="place-sign" src={letreiro} alt="Letreiro redondo de aço corten da Cheiro Bom Rotisseria, com o logo vazado e iluminado" sizes="11rem" widths={[480]} />
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // O calor mede a palavra na tela: espera a entrada do hero terminar.
+    let started = false;
+    const heat = () => {
+      if (started) return;
+      started = true;
+      import('../scripts/hero-heat').then((m) => m.startHeat());
+    };
+    addEventListener('hero:ready', heat, { once: true });
+    setTimeout(heat, document.documentElement.classList.contains('motion') ? 5000 : 1500);
+  </script>
+
+  <script is:inline>
+    (() => {
+      const el = document.querySelector('[data-status]');
+      if (!el) return;
+      const parts = Object.fromEntries(
+        new Intl.DateTimeFormat('en-US', { timeZone: 'America/Sao_Paulo', weekday: 'short', hour: 'numeric', hourCycle: 'h23' })
+          .formatToParts(new Date())
+          .map((p) => [p.type, p.value]),
+      );
+      const day = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(parts.weekday);
+      const hour = Number(parts.hour);
+      if (day === 0 && hour >= 9 && hour < 14) {
+        el.textContent = 'Aberto agora, até 14h';
+        el.dataset.open = 'true';
+        return;
+      }
+      const left = day === 0 ? (hour < 9 ? 0 : 7) : 7 - day;
+      el.textContent = left === 0 ? 'Abre hoje às 9h' : left === 1 ? 'Abre amanhã às 9h' : `Abre domingo às 9h · faltam ${left} dias`;
+    })();
+  </script>
+</Base>

@@ -1,0 +1,42 @@
+---
+import Base from '../layouts/Base.astro';
+import MenuList from '../components/MenuList.astro';
+import OrderPanel from '../components/OrderPanel.astro';
+import Icon from '../components/Icon.astro';
+import { menu } from '../data/menu';
+import { menuSchema } from '../data/schema';
+---
+
+<Base
+  title="Cardápio e preços | Cheiro Bom Rotisseria Araraquara"
+  description="Cardápio com preços da Cheiro Bom Rotisseria em Araraquara: frango assado, costela, kits, massas e sobremesas. Monte o pedido e envie pelo WhatsApp."
+  crumbs={[{ name: 'Cardápio', path: '/cardapio/' }]}
+  schema={[menuSchema()]}
+  whatsappMessage="Olá! Vi o cardápio e quero fazer um pedido."
+>
+  <header class="page-head papel">
+    <div class="wrap">
+      <h1 class="display h-xl">Cardápio da Cheiro Bom Rotisseria</h1>
+      <p class="lead">Rua Nove de Julho, 3925, Araraquara. Domingos, das 9h às 14h, com retirada, delivery e encomenda antecipada. Monte seu pedido aqui e envie pelo WhatsApp.</p>
+    </div>
+  </header>
+  <nav class="menu-chips" aria-label="Categorias do cardápio" data-chips>
+    <div class="wrap">
+      {menu.map((section) => <a href={`#${section.id}`}>{section.title}</a>)}
+    </div>
+  </nav>
+  <div class="band papel flush-top">
+    <div class="wrap order-layout">
+      <div>
+        {menu.map((section) => <MenuList section={section} orderable />)}
+        <p class="after with-icon" id="feijoada"><Icon name="flame" /><span>Feijoada: consulte a disponibilidade pelo WhatsApp.</span></p>
+      </div>
+      <OrderPanel />
+    </div>
+  </div>
+
+  <script>
+    import { startOrder } from '../scripts/order';
+    startOrder();
+  </script>
+</Base>

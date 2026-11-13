@@ -1,0 +1,355 @@
+---
+// Cardápio de Natal e Réveillon. Página sazonal: os dados vêm de src/data/festas.ts, a arte de assets/natal
+// (gerada por scripts/make-natal-assets.mjs a partir de assets/natal/raw).
+// Quatro blocos, cada informação no máximo duas vezes (no bloco dela e no pedido):
+// 1. convite com guirlanda e etiquetas de data, 2. a ceia, 3. a encomenda em abas com o pedido, 4. fechamento.
+import { getImage } from 'astro:assets';
+import Art from '../components/Art.astro';
+import Base from '../layouts/Base.astro';
+import Photo from '../components/Photo.astro';
+import PreloadImage from '../components/PreloadImage.astro';
+import Icon from '../components/Icon.astro';
+import MenuList from '../components/MenuList.astro';
+import OrderPanel from '../components/OrderPanel.astro';
+import { business, whatsappLink } from '../data/business';
+import { ceia, festasAvulsos, festasCarnes, festasMenu, festasSobremesas, temporada } from '../data/festas';
+import { menuSchema } from '../data/schema';
+import { ceuFundo } from '../data/ceu';
+import salada from '../../assets/raw/salada-marroquina.jpg';
+import maionese from '../../assets/raw/maionese.jpg';
+import farofa from '../../assets/raw/farofa.jpg';
+import frango from '../../assets/raw/frango-assado.jpg';
+import pernil from '../../assets/menu-natal-e-reveillon/foto-pernil.jpg';
+import acompanhamentos from '../../assets/menu-natal-e-reveillon/foto-acompanhamentos.jpg';
+import maracuja from '../../assets/menu-natal-e-reveillon/foto-torta-maracuja.jpg';
+import guirlanda from '../../assets/natal/guirlanda.webp';
+import etiquetas from '../../assets/natal/etiquetas.webp';
+import etiquetasGeo from '../../assets/natal/etiquetas.json';
+import laco from '../../assets/natal/laco.webp';
+import ramo1 from '../../assets/natal/ramo-1.webp';
+import ramo2 from '../../assets/natal/ramo-2.webp';
+import ramo4 from '../../assets/natal/ramo-4.webp';
+import '../styles/festas.css';
+
+const path = '/natal-e-reveillon/';
+// Topo (LCP): a guirlanda e o pernil no meio dela. As mesmas medidas na página e no preload do <head>.
+const wreathArt = { widths: [360, 540, 720, 900], sizes: '(min-width: 64rem) min(28rem, 54svh), min(78vw, 30rem)' };
+const wreathPhoto = { widths: [320, 480, 640, 800], sizes: '(min-width: 64rem) 17rem, 50vw' };
+const message = 'Olá! Quero encomendar do cardápio de Natal e Réveillon da Cheiro Bom.';
+const ceiaMessage = `Olá! Quero encomendar a ${ceia.name} (R$ ${ceia.price}).`;
+
+// Datas sempre do festas.ts: "terça", "qui", "22/12".
+const weekday = (iso: string, style: 'long' | 'short' = 'long') =>
+  new Date(`${iso}T12:00:00`).toLocaleDateString('pt-BR', { weekday: style }).replace('-feira', '').replace('.', '');
+const dm = (iso: string) => iso.slice(8, 10) + '/' + iso.slice(5, 7);
+const horario = temporada.horarioRetirada; // "das 18h às 20h"
+const { natal, reveillon } = temporada;
+
+// Ícones de traço vetorizados: entram no HTML para herdar a cor do CSS (currentColor).
+const svgs = import.meta.glob<string>('../../assets/natal/*.svg', { query: '?raw', import: 'default', eager: true });
+const viewBox = (raw: string) => raw.match(/viewBox="([^"]+)"/)![1];
+const ratio = (raw: string) => {
+  const [, , w, h] = viewBox(raw).split(' ').map(Number);
+  return w / h;
+};
+function inlineSvg(name: string, cls: string, height: number) {
+  const raw = svgs[`../../assets/natal/${name}.svg`];
+  const width = Math.round(height * ratio(raw));
+  return raw.replace(/ xmlns="[^"]*"/, '').replace('<svg', `<svg class="${cls}" width="${width}" height="${height}" aria-hidden="true" focusable="false"`);
+}
+
+// A romã aparece quatro vezes (etiqueta, pedido): um <symbol> só, reaproveitado com <use>.
+const romaRaw = svgs['../../assets/natal/roma.svg'];
+const romaSymbol = `<symbol id="fx-roma" viewBox="${viewBox(romaRaw)}">${romaRaw.replace(/^<svg[^>]*>/, '').replace(/<\/svg>\s*$/, '')}</symbol>`;
+const roma = (cls: string, height: number) =>
+  `<svg class="fx-mark fx-mark-roma ${cls}" viewBox="${viewBox(romaRaw)}" width="${Math.round(height * ratio(romaRaw))}" height="${height}" aria-hidden="true" focusable="false"><use href="#fx-roma"/></svg>`;
+// O ramo aparece com 22 a 30px de altura: sai numa versão pequena (64px, o dobro para telas densas), não no original.
+const ramoMini = await getImage({ src: ramo4, height: 64, format: 'webp' });
+const ramo = (cls: string, height: number, lazy: boolean) =>
+  `<img class="fx-mark fx-mark-ramo ${cls}" src="${ramoMini.src}" width="${Math.round((height * ramo4.width) / ramo4.height)}" height="${height}" alt="" aria-hidden="true"${lazy ? ' loading="lazy"' : ''} decoding="async" />`;
+
+const datas = [
+  { ...natal, mood: 'natal', geo: etiquetasGeo.tags[0], mark: ramo('', 30, false) },
+  { ...reveillon, mood: 'reveillon', geo: etiquetasGeo.tags[1], mark: roma('', 22) },
+];
+
+// Data do pedido: substitui retirada/delivery, porque nestas datas não há entrega.
+const options = datas.map((d, i) => ({
+  value: `${d.label}, retirada ${weekday(d.retirada)}, ${dm(d.retirada)}, ${horario}`,
+  label: d.label,
+  note: `retire ${weekday(d.retirada, 'short')} ${dm(d.retirada)}, ${horario.replace('das ', '')}`,
+  mark: i === 0 ? ramo('', 22, true) : roma('', 24),
+}));
+
+// A ceia em uma frase, montada dos itens: "Pernil suíno com 600g de farofa da casa, ... e 1,5kg de arroz, para 5 a 7 pessoas."
+const [principal, ...extras] = ceia.items;
+const partes = extras.map((i) => `${i.qty} de ${i.name.replace(/ branco ou à grega$/, '').toLowerCase()}`);
+const composicao = `${principal.name} com ${partes.slice(0, -1).join(', ')} e ${partes.at(-1)}, para ${ceia.serve.replace(/^de /, '')}.`;
+
+const sides = [
+  { photo: salada, alt: 'Salada marroquina com grão-de-bico, legumes e ervas', qty: '1kg', name: 'Salada marroquina' },
+  { photo: farofa, alt: 'Farofa da casa dourada em cumbuca', qty: '600g', name: 'Farofa' },
+  { photo: maionese, alt: 'Maionese de batata com cenoura e salsinha', qty: '1kg', name: 'Maionese' },
+];
+
+// Céu de estrelas do fechamento (o mesmo da vitrine de Natal na home).
+const ceu = ceuFundo();
+
+// Ícones dos passos do fechamento: altura do desenho em px (alinhados pelo topo, ao lado do número).
+// Igualados pela área do desenho (o caderno, 40x44, é a referência): a mão com moedas é larga e parecia maior;
+// a sacola perde altura para o ramo e parecia menor.
+const passoAltura = { encomende: 44, pague: 38, retire: 46 };
+
+const tabs = [
+  { id: 'carnes', label: 'Carnes e kits', icon: 'icone-frango', section: festasCarnes, photo: frango, alt: 'Frango assado dourado servido com maionese e farofa', pos: '50% 40%' },
+  { id: 'quilo', label: 'Acompanhamentos', icon: 'icone-farofa', section: festasAvulsos, photo: acompanhamentos, alt: 'Maionese, salpicão com batata palha e salada marroquina com hortelã em cumbucas sobre tábua', pos: '52% 62%' },
+  { id: 'doces', label: 'Sobremesas', icon: 'icone-torta', section: festasSobremesas, photo: maracuja, alt: 'Torta de maracujá tamanho família vista de cima, com a calda e as sementes da fruta', pos: '50% 50%' },
+];
+---
+
+<Base
+  title="Ceia de Natal e Réveillon em Araraquara | Cheiro Bom Rotisseria"
+  description={`Ceia de pernil para ${ceia.serve.replace(/^de /, '')}, carnes sous vide, acompanhamentos e tortas em Araraquara. Encomende pelo WhatsApp até ${dm(natal.encomendaAte)} (Natal) ou ${dm(reveillon.encomendaAte)} (Réveillon).`}
+  crumbs={[{ name: 'Natal e Réveillon', path }]}
+  inlineCrumbs
+  schema={[menuSchema({ sections: festasMenu, path, name: `Cardápio de Natal e Réveillon da ${business.name}` })]}
+  ogImage={{ path: '/og/cheiro-bom-natal-e-reveillon.jpg', alt: 'Pernil suíno assado da ceia de Natal da Cheiro Bom no centro de uma guirlanda, ao lado do selo da loja' }}
+  whatsappMessage={message}
+  footerCall="Sua ceia começa no WhatsApp."
+>
+  <PreloadImage slot="head" src={guirlanda} {...wreathArt} />
+  <PreloadImage slot="head" src={pernil} {...wreathPhoto} />
+  <svg class="fx-sprite" width="0" height="0" aria-hidden="true" focusable="false"><Fragment set:html={romaSymbol} /></svg>
+
+  <!-- 1. O convite: o pernil no meio da guirlanda e as datas nas etiquetas do barbante. -->
+  <header class="fx-hero" data-fx-hero>
+    <Art class="fx-corner fx-corner-hero" src={ramo1} widths={[240, 360, 500]} sizes="clamp(11rem, 15vw, 15rem)" />
+
+    <div class="fx-hero-in">
+      <nav class="fx-crumbs" aria-label="Você está aqui">
+        <ol>
+          <li><a href="/">Início</a></li>
+          <li><span aria-current="page">Natal e Réveillon</span></li>
+        </ol>
+      </nav>
+
+      <div class="fx-intro">
+        <h1 class="fx-title">
+          <span class="caps fx-kicker">Cardápio de</span>
+          <span class="script fx-natal">Natal</span>
+          <span class="display fx-rev">e Réveillon</span>
+        </h1>
+        <p class="fx-lead">Ceia de pernil, carnes sous vide, acompanhamentos por quilo e tortas família, prontos para você só pôr na mesa.</p>
+        <a class="btn btn-verde fx-cta" href="#ceia"><Icon name="gift" /><span>Montar minha ceia</span></a>
+      </div>
+
+      <div class="fx-wreath">
+        <div class="fx-wreath-photo">
+          <Photo src={pernil} alt="Pernil suíno assado da ceia de Natal da Cheiro Bom, dourado e fatiado sobre tábua de madeira" priority sizes={wreathPhoto.sizes} widths={wreathPhoto.widths} />
+        </div>
+        <Art class="fx-wreath-art" data-wreath src={guirlanda} widths={wreathArt.widths} sizes={wreathArt.sizes} priority />
+      </div>
+
+      <div class="fx-tags-wrap" data-tags>
+        <Art class="fx-tags-art" src={etiquetas} widths={[480, 720, 960, 1200]} sizes="(min-width: 64rem) 45vw, 116vw" eager />
+        <ol class="fx-tags" aria-label="Datas da encomenda">
+          {datas.map((d, i) => (
+            <li
+              class="fx-tag-li"
+              data-date={d.mood}
+              data-deadline={d.encomendaAte}
+              style={`--cx:${d.geo.cx}%;--cy:${d.geo.cy}%;--w:${d.geo.w}%;--h:${d.geo.h}%;--rot:${d.geo.rotate}deg`}
+            >
+              <a class="fx-tag" href="#encomenda" data-pick={i}>
+                <span class="fx-tag-head"><span class="script fx-tag-name">{d.label}</span><Fragment set:html={d.mark} /></span>
+                <span class="caps fx-tag-k">Encomende até</span>
+                <span class="fx-tag-day">{dm(d.encomendaAte)}</span>
+                <span class="fx-tag-week">{weekday(d.encomendaAte)}</span>
+                <span class="fx-tag-ret">Retire {weekday(d.retirada, 'short')} {dm(d.retirada)}<br />{horario}</span>
+                <span class="caps fx-tag-left" data-left hidden></span>
+                <span class="caps fx-closed" hidden>Encerrada</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </div>
+
+      <ul class="fx-rules">
+        <li><Icon name="calendar-check" />Quantidade limitada, só sob encomenda</li>
+        <li><Icon name="store" />Só retirada na {business.street}</li>
+        <li><Icon name="wallet" />Pix, dinheiro, débito ou crédito</li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="fx-laco">
+    <Art src={laco} widths={[400, 520, 780, 1040]} sizes="min(520px, 88vw)" />
+  </div>
+
+  <!-- 2. A ceia: a foto com os acompanhamentos na base e a comanda ao lado. -->
+  <section class="fx-ceia on-dark" id="ceia" aria-labelledby="ceia-t">
+    <Art class="fx-corner fx-corner-ceia" src={ramo2} widths={[240, 360, 500]} sizes="clamp(12rem, 17vw, 17rem)" />
+    <div class="wrap fx-ceia-grid">
+      <figure class="fx-ceia-fig">
+        <div class="fx-ceia-photo">
+          <Photo src={pernil} alt="Pernil suíno assado da Ceia Pernil Suíno da Cheiro Bom, dourado por fora e fatiado sobre tábua de madeira" sizes="(min-width: 64rem) 46vw, 92vw" widths={[480, 768, 1024, 1280]} />
+        </div>
+        <ul class="fx-sides" aria-label="Acompanhamentos da ceia">
+          {sides.map((s) => (
+            <li class="fx-side">
+              <span class="fx-side-rim"><Photo src={s.photo} alt={s.alt} sizes="(min-width: 64rem) 10rem, 28vw" widths={[200, 320, 480]} /></span>
+              <span class="fx-side-cap"><span class="price">{s.qty}</span> <span class="caps">{s.name}</span></span>
+            </li>
+          ))}
+        </ul>
+      </figure>
+
+      <article class="fx-comanda" data-item={ceia.id} data-name={`${ceia.name} (${ceia.arroz[0].toLowerCase()})`} data-price={ceia.price}>
+        <p class="caps fx-comanda-k">A ceia completa</p>
+        <h2 id="ceia-t" class="display fx-comanda-t">{ceia.name}</h2>
+        <p class="fx-comanda-desc">{composicao}</p>
+        <fieldset class="fx-rice" data-rice hidden>
+          <legend class="caps">Qual arroz?</legend>
+          {ceia.arroz.map((a, i) => (
+            <label><input type="radio" name="arroz" value={a.toLowerCase()} checked={i === 0} /><span>{a.replace('Arroz ', '')}</span></label>
+          ))}
+        </fieldset>
+        <div class="fx-comanda-foot">
+          <p class="fx-comanda-price"><strong class="price">R$ {ceia.price}</strong></p>
+          <div class="fx-comanda-order">
+            <div class="stepper" data-stepper hidden>
+              <button type="button" data-minus aria-label={`Tirar ${ceia.name}`} disabled><Icon name="minus" /></button>
+              <span data-qty aria-live="polite">0</span>
+              <button type="button" data-plus aria-label={`Adicionar ${ceia.name}`}><Icon name="plus" /></button>
+            </div>
+            <a class="btn btn-verde fx-comanda-wa" href={whatsappLink(ceiaMessage)}><Icon name="whatsapp" /><span>Encomendar a ceia</span></a>
+          </div>
+        </div>
+        <a class="link with-icon fx-comanda-added" href="#encomenda">Ceia no pedido. Ver a encomenda<Icon name="arrow-right" /></a>
+      </article>
+    </div>
+  </section>
+
+  <!-- 3. A encomenda: abas por categoria (todos os itens no HTML; a aba só mostra e esconde) e o pedido ao lado. -->
+  <section class="band papel fx-menu" id="encomenda" aria-labelledby="encomenda-t">
+    <div class="wrap">
+      <div class="fx-menu-head">
+        <p class="eyebrow caps">Monte a sua encomenda</p>
+        <h2 id="encomenda-t" class="display h-lg">O resto da mesa, do jeito que a família gosta</h2>
+        <p class="lead">Marque o que quer, escolha a data e envie a lista pronta no WhatsApp. A gente confirma por lá.</p>
+      </div>
+      <div class="order-layout">
+        <div class="fx-tabs" data-tabs>
+          <div class="fx-tablist" role="tablist" aria-label="Categorias do cardápio">
+            {tabs.map((t, i) => (
+              <button class="fx-tab" type="button" role="tab" id={`aba-${t.id}`} aria-controls={`painel-${t.id}`} aria-selected={i === 0 ? 'true' : 'false'} tabindex={i === 0 ? 0 : -1}>
+                <Fragment set:html={inlineSvg(t.icon, 'fx-tab-icon', 40)} />
+                <span class="caps fx-tab-label">{t.label}</span>
+              </button>
+            ))}
+          </div>
+          {tabs.map((t) => (
+            <div class="fx-panel" role="tabpanel" id={`painel-${t.id}`} aria-labelledby={`aba-${t.id}`} tabindex="0">
+              <div class="fx-panel-photo">
+                <Photo src={t.photo} alt={t.alt} sizes="(min-width: 64rem) 20rem, (min-width: 48rem) 40vw, 92vw" widths={[400, 640, 960]} />
+              </div>
+              <MenuList section={t.section} hideTitle orderable />
+            </div>
+          ))}
+          <script is:inline>
+            // Abas (padrão ARIA): roda logo após o HTML delas, sem esperar o bundle, para não piscar as três listas.
+            // Sem JS, as três categorias ficam abertas uma embaixo da outra.
+            (function () {
+              var root = document.querySelector('[data-tabs]');
+              var tabs = Array.prototype.slice.call(root.querySelectorAll('[role="tab"]'));
+              var panels = tabs.map(function (t) { return document.getElementById(t.getAttribute('aria-controls')); });
+              function select(i, focus) {
+                tabs.forEach(function (t, k) {
+                  var on = k === i;
+                  t.setAttribute('aria-selected', String(on));
+                  t.tabIndex = on ? 0 : -1;
+                  panels[k].hidden = !on;
+                });
+                if (focus) tabs[i].focus();
+              }
+              root.classList.add('is-tabbed');
+              select(0, false);
+              tabs.forEach(function (t, i) {
+                t.addEventListener('click', function () { select(i, false); });
+                t.addEventListener('keydown', function (e) {
+                  var n = tabs.length;
+                  var k = { ArrowRight: (i + 1) % n, ArrowLeft: (i - 1 + n) % n, Home: 0, End: n - 1 }[e.key];
+                  if (k === undefined) return;
+                  e.preventDefault();
+                  select(k, true);
+                });
+              });
+            })();
+          </script>
+        </div>
+        <OrderPanel
+          options={options}
+          legend="Para qual data?"
+          modeLabel="Data"
+          intro="Olá! Quero fazer esta encomenda de fim de ano na Cheiro Bom:"
+          storageKey={`cheirobom-festas-${temporada.ano}`}
+          notesPlaceholder="Nome de quem retira, sem ingrediente de origem animal"
+          note={`Só retirada na ${business.street}. Pague ${temporada.quandoPagar}: Pix, dinheiro, débito ou crédito.`}
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Fechamento: o laço na emenda abre a seção, os votos com fogos em linha fina e o passo a passo em três frases. -->
+  <div class="fx-laco">
+    <Art src={laco} widths={[400, 520, 780, 1040]} sizes="min(520px, 88vw)" />
+  </div>
+  <section class="fx-fim on-dark" id="como-funciona" aria-labelledby="fim-t">
+    <!-- Camadas: cor → grão (::before) → vinheta (::after) → estrelas → fogos → conteúdo. -->
+    <div class="fx-ceu" aria-hidden="true" style={`background-image:${ceu}`}></div>
+    <canvas class="fx-fogos" data-fogos aria-hidden="true"></canvas>
+    <div class="wrap">
+      <h2 id="fim-t" class="fx-wish">
+        <span class="script fx-wish-a fx-ouro">Feliz Natal</span>
+        <!-- Sem .display: o reveal global mascara as linhas e cortaria as laçadas do script. -->
+        <span class="fx-wish-b">e um próspero <span class="script fx-ouro fx-ano">Ano Novo</span> a todos</span>
+      </h2>
+      <ol class="fx-steps">
+        <li>
+          <div class="fx-step-head">
+            <span class="fx-step-n">01</span>
+            <span class="fx-step-ico" aria-hidden="true"><Fragment set:html={inlineSvg('icone-encomende', '', passoAltura.encomende)} /></span>
+          </div>
+          <h3 class="fx-step-t">Encomende</h3>
+          <p>Marque os itens aqui e envie a lista no WhatsApp até o prazo da sua data.</p>
+        </li>
+        <li>
+          <div class="fx-step-head">
+            <span class="fx-step-n">02</span>
+            <span class="fx-step-ico" aria-hidden="true"><Fragment set:html={inlineSvg('icone-pague', '', passoAltura.pague)} /></span>
+          </div>
+          <h3 class="fx-step-t">Pague</h3>
+          <p>Na hora de encomendar ou quando vier buscar, com Pix na chave <span class="fx-nowrap">{temporada.pix}</span>.</p>
+        </li>
+        <li>
+          <div class="fx-step-head">
+            <span class="fx-step-n">03</span>
+            <span class="fx-step-ico" aria-hidden="true"><Fragment set:html={inlineSvg('icone-retire', '', passoAltura.retire)} /></span>
+          </div>
+          <h3 class="fx-step-t">Retire</h3>
+          <p>Passe na loja na véspera e diga o nome de quem encomendou.</p>
+        </li>
+      </ol>
+      <p class="fx-fim-cta">
+        <a class="btn" href={whatsappLink(message)}><Icon name="whatsapp" /><span>Garantir a minha encomenda</span></a>
+      </p>
+    </div>
+  </section>
+
+  <script>
+    import { startOrder } from '../scripts/order';
+    startOrder();
+    // Contador e movimentos usam GSAP: carregam depois do primeiro quadro, para a guirlanda (LCP) pintar antes.
+    requestAnimationFrame(() => setTimeout(() => import('../scripts/festas').then((m) => m.startFestas())));
+  </script>
+</Base>

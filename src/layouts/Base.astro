@@ -1,0 +1,155 @@
+---
+import { Image } from 'astro:assets';
+import '@fontsource/gloock/latin-400.css';
+import '@fontsource/cormorant-garamond/latin-600.css';
+import '@fontsource/monsieur-la-doulaise/latin-400.css';
+import '@fontsource-variable/figtree/index.css';
+import '../styles/global.css';
+import gloockUrl from '@fontsource/gloock/files/gloock-latin-400-normal.woff2?url';
+import logo from '../../assets/brand/logo.png';
+import Icon from '../components/Icon.astro';
+import Sketch from '../components/Sketch.astro';
+import SiteNav from '../components/SiteNav.astro';
+import SEO, { type OgImage } from '../components/SEO.astro';
+import { DRAFT_PATHS } from '../../site.config.mjs';
+import { business, fullAddress, mapsUrl, whatsappLink } from '../data/business';
+import { breadcrumbs as breadcrumbSchema, restaurant } from '../data/schema';
+import { pages, sections } from '../data/pages';
+
+interface Props {
+  title: string;
+  description: string;
+  crumbs?: { name: string; path: string }[];
+  schema?: object[];
+  ogImage?: OgImage;
+  whatsappMessage?: string;
+  noindex?: boolean;
+  // A página desenha a trilha dentro do próprio topo (o schema continua saindo daqui).
+  inlineCrumbs?: boolean;
+  footerCall?: string;
+}
+
+const {
+  title,
+  description,
+  crumbs = [],
+  schema = [],
+  ogImage,
+  whatsappMessage = 'Olá! Quero fazer um pedido na Cheiro Bom.',
+  noindex = false,
+  inlineCrumbs = false,
+  footerCall = 'Seu domingo começa no WhatsApp.',
+} = Astro.props;
+
+const path = Astro.url.pathname;
+const isDraft = noindex || DRAFT_PATHS.includes(path);
+const trail = crumbs.length ? [{ name: 'Início', path: '/' }, ...crumbs] : [];
+const jsonLd = [restaurant(), ...schema, ...(trail.length ? [breadcrumbSchema(trail)] : [])];
+const orderLink = whatsappLink(whatsappMessage);
+
+---
+
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <SEO title={title} description={description} image={ogImage} noindex={isDraft} jsonLd={jsonLd} />
+    <link rel="preload" href={gloockUrl} as="font" type="font/woff2" crossorigin />
+    <script is:inline>
+      // Só esconde o que vai animar se o movimento estiver liberado. Se o script falhar, tudo reaparece.
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        var root = document.documentElement;
+        root.classList.add('motion');
+        setTimeout(function () { if (!root.classList.contains('motion-on')) root.classList.remove('motion'); }, 3000);
+      }
+    </script>
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip" href="#conteudo">Pular para o conteúdo</a>
+
+    <SiteNav orderLink={orderLink} />
+
+    {trail.length > 0 && !inlineCrumbs && (
+      <nav class="crumbs" aria-label="Você está aqui">
+        <ol>
+          {trail.map((item, i) => (
+            <li>
+              {i < trail.length - 1 ? <a href={item.path}>{item.name}</a> : <span aria-current="page">{item.name}</span>}
+            </li>
+          ))}
+        </ol>
+      </nav>
+    )}
+
+    <main id="conteudo">
+      <slot />
+    </main>
+
+    <footer class="site-footer verde on-dark">
+      <div class="wrap">
+        <Sketch name="alecrim" class="footer-ramo" />
+        <div class="footer-top">
+          <p class="display footer-call">{footerCall}</p>
+          <Image class="footer-logo" src={logo} alt={`Selo da ${business.name}`} width={320} height={320} />
+        </div>
+        <p class="after"><a class="btn" href={orderLink}><Icon name="whatsapp" /><span>Pedir no WhatsApp</span></a></p>
+        <div class="footer-grid">
+          <section aria-labelledby="f-end">
+            <h2 id="f-end" class="caps">Onde fica</h2>
+            <address>
+              <strong>{business.name}</strong><br />
+              <a class="with-icon" href={mapsUrl}><Icon name="map-pin" />{fullAddress}</a><br />
+              <a class="with-icon" href={`tel:${business.phoneE164}`}><Icon name="phone" />{business.phoneDisplay}</a>
+            </address>
+            <p class="with-icon"><Icon name="clock" />{business.hoursText}</p>
+          </section>
+          <section aria-labelledby="f-menu">
+            <h2 id="f-menu" class="caps">Cardápio</h2>
+            <ul>
+              {pages.map((item) => <li><a href={item.path}>{item.name}</a></li>)}
+            </ul>
+          </section>
+          <section aria-labelledby="f-nav">
+            <h2 id="f-nav" class="caps">Informações</h2>
+            <ul>
+              {sections.slice(1).map((item) => <li><a href={item.path}>{item.name}</a></li>)}
+              <li><a href="/#faq">Dúvidas</a></li>
+            </ul>
+          </section>
+          <section aria-labelledby="f-soc">
+            <h2 id="f-soc" class="caps">Acompanhe</h2>
+            <ul>
+              <li><a class="with-icon" href={business.instagram} rel="noopener"><Icon name="instagram" />@cheirobom.rotisseria</a></li>
+              <li><a class="with-icon" href={business.facebook} rel="noopener"><Icon name="facebook" />/cheirobom.rotisseria</a></li>
+            </ul>
+          </section>
+        </div>
+        <p class="footer-legal">© {new Date().getFullYear()} {business.name}. Araraquara/SP.</p>
+      </div>
+    </footer>
+
+    <div class="cta-bar on-dark">
+      <a class="btn" href={orderLink}><Icon name="whatsapp" /><span>Pedir no WhatsApp</span></a>
+    </div>
+    <!-- Botão flutuante (desktop): medalhão dourado com o WhatsApp, como o centro do selo da loja. -->
+    <a class="wa-float" href={orderLink} aria-label="Pedir no WhatsApp" data-wa-float><Icon name="whatsapp" /></a>
+
+    <script is:inline>
+      // Links para fora do site (WhatsApp, Google Maps, Instagram, Facebook) abrem em nova guia: o visitante não perde
+      // a página nem o pedido montado. Roda já no fim do HTML; os links internos continuam na mesma guia.
+      document.querySelectorAll('a[href^="http"]').forEach(function (a) {
+        if (a.host === location.host) return;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+      });
+    </script>
+    <script>
+      import '../scripts/ui';
+      // A coreografia (GSAP, ~45 KiB) é avaliada depois do primeiro quadro, para a foto do topo (LCP) pintar sem
+      // esperar o script. A tela não muda: os estados iniciais das animações só entram após document.fonts.ready,
+      // e o que precisa nascer escondido já está escondido pelo CSS da classe .motion.
+      requestAnimationFrame(() => setTimeout(() => import('../scripts/motion')));
+    </script>
+  </body>
+</html>

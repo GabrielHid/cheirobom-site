@@ -1,0 +1,29 @@
+---
+// Ícones embutidos no HTML em tempo de build: nenhum arquivo extra para o navegador baixar.
+import * as lucide from 'lucide-static';
+import { siFacebook, siInstagram, siWhatsapp } from 'simple-icons';
+
+interface Props {
+  name: string;
+  class?: string;
+}
+
+const brands: Record<string, string> = { whatsapp: siWhatsapp.path, instagram: siInstagram.path, facebook: siFacebook.path };
+const { name, class: className } = Astro.props;
+const cls = ['icon', className].filter(Boolean).join(' ');
+
+let svg: string;
+if (brands[name]) {
+  svg = `<svg class="${cls}" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="${brands[name]}"/></svg>`;
+} else {
+  const key = name.replace(/(^|-)(\w)/g, (_, __, c: string) => c.toUpperCase());
+  const raw = (lucide as unknown as Record<string, string>)[key];
+  if (!raw) throw new Error(`Ícone não encontrado: ${name}`);
+  svg = raw
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/\s(width|height|class)="[^"]*"/g, '')
+    .replace('<svg', `<svg class="${cls}" aria-hidden="true"`);
+}
+---
+
+<Fragment set:html={svg} />

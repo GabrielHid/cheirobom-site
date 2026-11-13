@@ -1,0 +1,42 @@
+---
+// Dúvidas como página do cardápio: número em versalete, pergunta na serifa display, resposta em texto.
+// À esquerda, o título e a saída para o WhatsApp ficam parados enquanto a lista passa (só no desktop).
+// No celular a ordem é título, perguntas e, por último, o convite para perguntar.
+import Icon from './Icon.astro';
+import SectionHead from './SectionHead.astro';
+import Sketch from './Sketch.astro';
+import { business, whatsappLink } from '../data/business';
+
+interface Props {
+  items: { q: string; a: string }[];
+  title?: string;
+}
+const { items, title = 'Perguntas frequentes' } = Astro.props;
+const ask = whatsappLink('Olá! Tenho uma dúvida sobre a Cheiro Bom:');
+---
+
+<div class="faq">
+  <div class="faq-side">
+    <SectionHead ramo id="faq-title" eyebrow="Dúvidas" title={title} lead="O que mais perguntam antes de fazer o pedido de domingo." />
+    <div class="faq-ask">
+      <Sketch name="mensagem" />
+      <div>
+        <p class="faq-ask-title"><span class="script">Ainda</span> com dúvida?</p>
+        <p class="faq-ask-text">Pergunte no WhatsApp <span class="faq-ask-tel">{business.phoneDisplay}</span>.</p>
+        <a class="btn" href={ask}><Icon name="whatsapp" /><span>Perguntar no WhatsApp</span></a>
+      </div>
+    </div>
+  </div>
+  <div class="faq-list">
+    {items.map((item, i) => (
+      <details open={i === 0} name="faq">
+        <summary>
+          <span class="faq-n caps" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+          <span class="faq-q">{item.q}</span>
+          <span class="faq-sign" aria-hidden="true"><Icon name="plus" /></span>
+        </summary>
+        <p>{item.a}</p>
+      </details>
+    ))}
+  </div>
+</div>

@@ -1,0 +1,65 @@
+---
+// Metas de busca e compartilhamento de uma página: title, description, robots, canonical, Open Graph, Twitter,
+// ícones, theme-color e JSON-LD. Usado pelo layout Base; a página só passa o que é dela.
+import { business } from '../data/business';
+
+export interface OgImage {
+  path: string; // caminho em public/, 1200x630
+  alt: string;
+  width?: number;
+  height?: number;
+}
+
+interface Props {
+  title: string;
+  description: string;
+  image?: OgImage;
+  type?: 'website' | 'article';
+  noindex?: boolean;
+  jsonLd?: object[];
+}
+
+const DEFAULT_IMAGE: OgImage = { path: '/og/cheiro-bom-frango-assado.jpg', alt: 'Frango assado dourado da Cheiro Bom Rotisseria' };
+
+const { title, description, image = DEFAULT_IMAGE, type = 'website', noindex = false, jsonLd = [] } = Astro.props;
+
+// Canônica absoluta, só o caminho: sem query, sem hash e sem barra duplicada.
+const path = Astro.url.pathname.replace(/\/{2,}/g, '/');
+const canonical = new URL(path, Astro.site).href;
+const ogImage = new URL(image.path, Astro.site).href;
+const { width = 1200, height = 630 } = image;
+const robots = noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large, max-snippet:-1';
+---
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{title}</title>
+<meta name="description" content={description} />
+<meta name="robots" content={robots} />
+<link rel="canonical" href={canonical} />
+<meta name="theme-color" content="#0B3D12" />
+
+<link rel="icon" href="/favicon.ico" sizes="48x48" />
+<link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32" />
+<link rel="icon" href="/favicon-16x16.png" type="image/png" sizes="16x16" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+<link rel="sitemap" type="application/xml" href="/sitemap-index.xml" />
+
+<meta property="og:type" content={type} />
+<meta property="og:locale" content="pt_BR" />
+<meta property="og:site_name" content={business.name} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+<meta property="og:image" content={ogImage} />
+<meta property="og:image:type" content="image/jpeg" />
+<meta property="og:image:width" content={String(width)} />
+<meta property="og:image:height" content={String(height)} />
+<meta property="og:image:alt" content={image.alt} />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={ogImage} />
+<meta name="twitter:image:alt" content={image.alt} />
+
+{jsonLd.map((block) => <script is:inline type="application/ld+json" set:html={JSON.stringify(block)} />)}

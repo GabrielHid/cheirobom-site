@@ -1,0 +1,29 @@
+---
+// Fatos que o cliente procura antes de pedir: preço, quando, como recebe e onde.
+// Aparecem logo abaixo do título de cada página, na mesma ordem em todas.
+import Icon from './Icon.astro';
+import { business } from '../data/business';
+
+type Fact = { icon: string; label: string; value: string };
+interface Props {
+  items?: Fact[];
+  common?: boolean;
+  class?: string;
+}
+const { items = [], common = true, class: className } = Astro.props;
+const shared: Fact[] = [
+  { icon: 'store', label: 'Retirada', value: 'Domingos, 9h às 14h' },
+  { icon: 'bike', label: 'Delivery', value: 'Domingos, 11h às 14h' },
+  { icon: 'map-pin', label: 'Onde', value: business.street },
+];
+const all = common ? [...items, ...shared] : items;
+---
+
+<dl class:list={['facts', className]}>
+  {all.map((f) => (
+    <div>
+      <dt class="caps"><Icon name={f.icon} />{f.label}</dt>
+      <dd>{f.value}</dd>
+    </div>
+  ))}
+</dl>
