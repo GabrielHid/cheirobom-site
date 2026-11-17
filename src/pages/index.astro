@@ -111,7 +111,7 @@ const embedUrl = `https://www.google.com/maps?q=${encodeURIComponent(`${business
 const faq = [
   { q: 'A rotisseria abre em outros dias?', a: 'Por enquanto, só aos domingos. Em datas especiais como Natal, Ano-Novo e Sexta-feira Santa há cardápio e horário próprios, anunciados com antecedência.' },
   { q: 'Dá para encomendar antes do domingo?', a: 'Sim, a encomenda antecipada é feita pelo WhatsApp (16) 99765-6146.' },
-  { q: 'Tem delivery em Araraquara?', a: 'Sim, aos domingos, das 11h às 14h. Confirme sua região e a taxa pelo WhatsApp. A retirada na loja vai das 9h às 14h.' },
+  { q: 'Tem delivery em Araraquara?', a: 'Sim, aos domingos, das 11h às 14h. Confirme sua região e a taxa pelo WhatsApp. A retirada na loja vai das 9h30 às 14h.' },
   { q: 'Quantas pessoas o almoço completo serve?', a: 'Os kits de coxa e sobrecoxa servem até 3 pessoas. Os kits de frango assado e de costela bovina servem até 5.' },
   { q: 'Tem feijoada todo domingo?', a: 'A feijoada depende da disponibilidade. Pergunte pelo WhatsApp antes de encomendar.' },
 ];
@@ -151,7 +151,7 @@ const faq = [
       <div class="hero-arch">
         <Photo class="hero-photo" src={frango} priority quality={42} sizes={heroSizes} widths={heroWidths} alt="Frango assado dourado sobre tora de madeira, com maionese, farofa e folhagem ao fundo" />
         <Photo class="hero-cut" src={recorte} eager quality={30} sizes="(min-width: 48rem) 32vw, 92vw" widths={[480, 768, 1080]} alt="" />
-        <p class="status" data-status>Domingo, das 9h às 14h</p>
+        <p class="status" data-status>Domingo, das 9h30 às 14h</p>
       </div>
 
       <div class="hero-side">
@@ -315,19 +315,21 @@ const faq = [
       const el = document.querySelector('[data-status]');
       if (!el) return;
       const parts = Object.fromEntries(
-        new Intl.DateTimeFormat('en-US', { timeZone: 'America/Sao_Paulo', weekday: 'short', hour: 'numeric', hourCycle: 'h23' })
+        new Intl.DateTimeFormat('en-US', { timeZone: 'America/Sao_Paulo', weekday: 'short', hour: 'numeric', minute: 'numeric', hourCycle: 'h23' })
           .formatToParts(new Date())
           .map((p) => [p.type, p.value]),
       );
       const day = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(parts.weekday);
-      const hour = Number(parts.hour);
-      if (day === 0 && hour >= 9 && hour < 14) {
+      const now = Number(parts.hour) * 60 + Number(parts.minute);
+      const opens = 9 * 60 + 30;
+      const closes = 14 * 60;
+      if (day === 0 && now >= opens && now < closes) {
         el.textContent = 'Aberto agora, até 14h';
         el.dataset.open = 'true';
         return;
       }
-      const left = day === 0 ? (hour < 9 ? 0 : 7) : 7 - day;
-      el.textContent = left === 0 ? 'Abre hoje às 9h' : left === 1 ? 'Abre amanhã às 9h' : `Abre domingo às 9h · faltam ${left} dias`;
+      const left = day === 0 ? (now < opens ? 0 : 7) : 7 - day;
+      el.textContent = left === 0 ? 'Abre hoje às 9h30' : left === 1 ? 'Abre amanhã às 9h30' : `Abre domingo às 9h30 · faltam ${left} dias`;
     })();
   </script>
 </Base>

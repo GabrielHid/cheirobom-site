@@ -47,7 +47,7 @@ export function restaurant() {
     },
     ...(latitude && longitude ? { geo: { '@type': 'GeoCoordinates', latitude, longitude } } : {}),
     openingHoursSpecification: [
-      { '@type': 'OpeningHoursSpecification', dayOfWeek: 'https://schema.org/Sunday', opens: '09:00:00', closes: '14:00:00' },
+      { '@type': 'OpeningHoursSpecification', dayOfWeek: 'https://schema.org/Sunday', opens: '09:30:00', closes: '14:00:00' },
     ],
     ...(especiais.length ? { specialOpeningHoursSpecification: especiais } : {}),
     sameAs: [business.instagram, business.facebook, ...(googleProfile ? [googleProfile] : [])],

@@ -46,11 +46,11 @@ Domínio do cliente, com site Angular no ar na Vercel e DNS no Registro.br. Como
 ### Divergências de horário: corrigir já
 | Dado | Cliente | Perfil no Google | Site atual |
 |---|---|---|---|
-| Abertura | **9h** | **9h30, errado** | 9h |
+| Abertura | **9h30** (mudou em nov/2026) | 9h30 | 9h30 |
 | Delivery | 11h às 14h | 11h às 14h | **9h às 14h, errado** |
 
-- ⬜ Corrigir no Perfil a abertura para 9h.
-- ✅ O novo site usa 9h para retirada e 11h às 14h para delivery.
+- ✅ Abertura do Perfil (9h30) já bate com o novo horário.
+- ✅ O novo site usa 9h30 para retirada e 11h às 14h para delivery.
 
 ### Só domingo: o limite estrutural
 "Aberto na hora da busca" é o 5º fator de mapas na pesquisa da Whitespark. Como a loja abre um dia por semana, ela aparece fechada nos outros seis, inclusive no sábado à noite, quando o público decide. O horário real é este e **não deve ser maquiado no Perfil**: isso viola as diretrizes e frustra o cliente.
@@ -139,7 +139,7 @@ Isso é ambiente de laboratório. O número que vale é o de usuários reais em 
 - ⬜ Poucas categorias secundárias, só as que descrevem o negócio.
 - ✅ Endereço visível e completo. ⬜ Conferir se o **pino** está no local exato.
 - ⬜ Conferir se o telefone é (16) 99765-6146.
-- ⬜ Corrigir a abertura de 9h30 para 9h e adicionar horários especiais em feriados.
+- ✅ Abertura em 9h30 está correta. ⬜ Adicionar horários especiais em feriados.
 - ⬜ Revisar os atributos: confirmar se "opções vegetarianas" e "cães permitidos" são verdadeiros.
 - ⬜ Conferir se o botão Site aponta para `https://rotisseriacheirobom.com.br/`.
 - ⬜ Site, cardápio e link de pedido próprios (WhatsApp ou página do cardápio), para evitar que terceiros fiquem como opção principal.

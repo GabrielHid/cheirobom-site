@@ -15,7 +15,7 @@
 
 **O nome é o conceito:** "Cheiro Bom". O cheiro do frango assando é a memória que a marca vende. O site precisa fazer o visitante *quase sentir o cheiro*: calor, vapor, pele dourada, alecrim.
 
-**O dia:** domingo é o dia dela ("Domingo é dia de feijoada", almoço de domingo, 9h às 14h). O domingo é protagonista, não rodapé.
+**O dia:** domingo é o dia dela ("Domingo é dia de feijoada", almoço de domingo, 9h30 às 14h). O domingo é protagonista, não rodapé.
 
 **Público:** famílias de Araraquara, 30 a 65 anos, que decidem o almoço no sábado à noite ou domingo de manhã, no celular. Chegam pelo Google, Google Meu Negócio e Instagram.
 
@@ -106,7 +106,7 @@ O site alterna **seções claras (papel)** e **seções verde-escuro (marca)**, 
 - Endereço: Rua Nove de Julho, 3925, Jardim Dom Pedro I, Araraquara/SP, 14802-257
 - WhatsApp: (16) 99765-6146 · `https://wa.me/5516997656146`
 - Instagram @cheirobom.rotisseria · Facebook /cheirobom.rotisseria
-- Horário: domingos, 9h às 14h, apenas aos domingos por enquanto (confirmado pelo cliente). Datas especiais têm cardápio e horário próprios (Natal, Ano-Novo, Sexta-feira Santa).
+- Horário: domingos, 9h30 às 14h, apenas aos domingos por enquanto (confirmado pelo cliente). Datas especiais têm cardápio e horário próprios (Natal, Ano-Novo, Sexta-feira Santa).
 - Delivery: domingos, 11h às 14h (confirmado pelo cliente; os entregadores chegam às 10h30)
 - Modalidades: retirada, delivery, encomenda antecipada
 - Google: 5,0 com 34 avaliações em novembro de 2026; categoria exibida "Frango". **Atualizar** no build.
@@ -239,7 +239,7 @@ A home anterior tinha 12 blocos, cinco deles pedaços do cardápio espalhados, e
 > **Atualização (novembro de 2026):** o hero "O calor" (palavra gigante sobre o frango) foi trocado pelo **"Cardápio aberto"**: fundo papel com textura (`public/textures/papel.webp`, gerada por `scripts/make-paper.mjs`), título à esquerda, frango num arco ao centro com o calor só dentro dele, e os preços das carnes à direita, lidos de `src/data/menu.ts`. A mesma textura cobre todas as superfícies claras pelo token `--papel-fundo` (no `body`, na `.rest` e no painel de pedido); as seções `.papel` ficam transparentes para a textura correr sem emenda. Os fundos verdes grandes (seções `.verde`, rodapé, menu, selo, painel do celular e barras fixas) usam o feltro `--verde-fundo` (`public/textures/verde.webp`, mesmo script); botões e chips verdes ficam lisos. Para SEO local, a landing única virou um site enxuto com home + páginas dedicadas (`/cardapio/`, `/frango-assado/`, `/costela-sous-vide/`, `/almoco-completo/`, `/congelados/` e `/feijoada/` em rascunho). A lista abaixo descreve a home. Estrutura, palavras-chave e pendências estão em [seo.md](seo.md).
 
 1. **Hero "Domingo"**
-   Comida em tela cheia (frango ou vídeo dele girando) com **calor/vapor subindo** via shader. Headline em serifa display com uma palavra em script. Chip de status ao vivo: *"Aberto agora, até 14h"* / *"Abre domingo às 9h · faltam 2 dias"*. CTA WhatsApp.
+   Comida em tela cheia (frango ou vídeo dele girando) com **calor/vapor subindo** via shader. Headline em serifa display com uma palavra em script. Chip de status ao vivo: *"Aberto agora, até 14h"* / *"Abre domingo às 9h30 · faltam 2 dias"*. CTA WhatsApp.
    Alternativa a testar: o **letreiro de corten** como elemento de entrada (luz atravessando o logo vazado e revelando a comida).
    Proibido: texto à esquerda + imagem à direita.
 
@@ -254,7 +254,7 @@ A home anterior tinha 12 blocos, cinco deles pedaços do cardápio espalhados, e
    Bloco editorial grande para o combo, no estilo do post: serifa pesada marrom, foto da cumbuca. Estrutura pensada para trocar de destaque (Dia das Mães, Natal, Costelinha barbecue) sem refazer layout.
 
 5. **O ritual de domingo** (linha do tempo)
-   Encomenda antecipada (semana) → abre 9h → retirada/delivery → 14h acabou.
+   Encomenda antecipada (semana) → abre 9h30 → retirada/delivery → 14h acabou.
 
 6. **Sous vide, explicado** (opcional)
    O feed já educa sobre sous vide. Uma seção curta e visual dá diferencial e conteúdo para SEO ("costela sous vide araraquara").

@@ -25,7 +25,7 @@ export const business = {
   // 'https://maps.app.goo.gl/XXXXXXXXXXXXXXXXX'. Enquanto for null, o schema não leva o link (sem placeholder no ar)
   // e o botão "Ler as avaliações" usa a busca do Maps.
   googleProfile: null as string | null,
-  hoursText: 'Domingos, das 9h às 14h',
+  hoursText: 'Domingos, das 9h30 às 14h',
   deliveryText: 'Domingos, das 11h às 14h',
   priceRange: 'R$7-R$165',
   // Atualizar junto com o Perfil. Texto visível apenas: não vai para o schema.
